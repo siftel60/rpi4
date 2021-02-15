@@ -1,0 +1,271 @@
+
+
+    ##################################  OpenWrt builds for the rpi-4
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    IMPORTANT: build users running pre r15599 releases are advised to update
+               or check your dnsmasq(-full) version is above 2.82(over 2.83 for logspamfix)
+    https://forum.openwrt.org/t/security-advisory-2021-01-19-1-dnsmasq-multiple-vulnerabilities/85903
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    +odhcp6c +netifd +libwolfssl24 ~hostpad +dnsmasq-full ~banip
+    openvpn-openssl? wget-ssl?
+
+
+
+
+
+    ##################################################################
+
+    see: https://forum.openwrt.org/t/rpi4-community-build/69998
+         to request packages, provide feedback etc.
+
+
+    Credit and source courtesy of the OpenWrt team, contributors and
+    the great folks on the forum.
+
+
+    Special thanks: vgaetera jeff jow slh trendy and lleachii for
+                    guru skillsharing and support... 
+
+                    @dibdot, @trendy, @moodyblue, @neil1, @jayanta525,
+                    @poodad, @syntaxterror and @krazeh for contributions
+                    to the build
+
+                    @hnyman for representing the userbase on the
+                    mailing-list and build system insight
+
+
+
+    luci-theme-argon: https://github.com/jerrykuku/luci-theme-argon
+    login-sysinfo.sh: Cezary Jackiewicz
+      sqm-dscp-logic: hisham2630 (and others) @ldir @dlakelan
+                      forum > ultimate-sqm-settings-layer-cake-dscp-marks
+
+
+
+    NOTES:
+    
+            opkg-alt-repo (base|core|luci) 100% non-modified
+    
+            note: technically atm, wifi is not supported by this build and
+                  a stand alone auxillary AP is required for production env
+
+
+    flashing)
+
+        -'fac'=factory>unzip>sdcard
+        -'sys'=sysupgrade
+        
+        -ext4 300M-boot 900M-rootfs (squashfs untested) 
+        
+        
+        -!!! sysupgrade -p  !!! switch to take new partition sizes !!!
+        -sysupgrade on non-community backup + ensure rc.local has exit 0
+        -note: the two options above, upgrade to this build are less
+         advised... it's preferred if you start fresh factory->sdcard
+         ( a config backup etc/config/* restore is ok )
+
+
+        NOTE: Flashing can take extra time... due to 1G i.e.;
+
+            Seriously... go hang the washing or something
+
+                  samsungevo-internalsd: 2-3 mins
+             generic-sandisk-internalsd:   7 mins
+        
+             (green-act-led on means flashing)
+             (usb key with led helps to see)
+
+
+    hardware) see HARDWARE for typical setup / recommendations   
+
+
+      quirks)
+        
+        -some autosetup functionality is dependant on eth1-usb
+
+        -disabled services... desired services might be disabled
+         out of the box in order not to bog down people who don't use them.
+         enable what you use, and provide feedback if something is bloaty /
+         or needed by default. see forum for more info.
+
+        -~wifi ap/ac issue (reportedx2: mine works fine)
+
+
+        -bug: mwan3 defaults bugger openwrt.org opkg update when enabled
+         update@20200923 testing ipk / next pkg fixes should resolve... 
+
+
+        -add /root/wrt.ini to your /etc/sysupgrade.conf
+        -create /etc/packagesremove.txt and add to sysupgrade.conf
+      
+      
+      extras)
+
+        scripts;
+        -rpi-sysup-online.sh automated upgrade
+        -package restore (sysupgrade -R)
+        -rpi4-official-opkg.sh for security and bugfixes from master
+        -rollback.sh|opK install <pkg|file>|wrtsnapback (betas)
+        -luci updates notifications (points to master not build :( )
+        -rpi-throttlewatch.sh ( test thermal/scaling )
+        -rpi-sysup-clean-backup.sh or similar wip (dump generic backups)
+
+        opt-in/out;        
+        -persistent logs / statistics / nlbwmon / upgrade-data
+        -sqmdscp console/other priority @> rpi4.qos
+        -lucisshon, wifiadminboot
+        -fwcustom geoip-db, rfc1918
+        -usbboot-support/auto-fsck (wip->multiboot/partresize/live-mode)
+
+
+        utilities;
+        -parted
+        -speedtest-ookla(git-dl'd)
+        -base64, tac, stat, blkid, etc. etc.
+
+
+    PACKAGES:
+        
+        -bash (w-temperature@ps1)
+        -wget curl unzip htop lsof losetup strace vim-fuller
+        -openvpn + kmod-tun + wireguard + mwan3 + vpn-pbr
+        -banip + adblock
+        -nano colors
+        -many many more...
+       
+
+
+
+    DETAILED NOTES / BUGS / CAVEATS:
+
+
+        PHILOSOPHY: 
+        
+        Originally the build aimed to provide snapshot/master
+        with stable package repos, several built-in utilities
+        and services ( default-off where applicable to keep
+        it light ), and a few setup / helper scripts...
+
+        The build has evolved more toward a full feature
+        ext4 only build. And while original versions were
+        aimed at interoperability with a stock-official-image
+        this becomes less the case as time goes by...
+
+        ... as such I recommend installing this build fresh
+        and taking care if restoring 'official' backups
+        or vice-versa across core versions...
+
+        Most things will work... but there are specific
+        considerations and tools for this purpose...
+
+
+        As the a stable openwrt (21/22.x?) looms near the build
+        is likely to become a little less generalised and
+        refined.
+
+
+        Feedback and requests are always welcome...
+        even better with good justifications and minimal
+        impact to OOB operations, or appeal to the masses,
+        or expand functionality...
+
+
+        Uncommon requests are put to
+        the 3 or 5 build user test ( 20% interest )
+
+
+
+        -see TODO
+
+        -/root in its entirety should not be part of your sysupgrade.conf
+         ( community > community ) individual files and directories will
+         be ok... efforts are underway to overcome this...
+
+
+        -using sysupgrade -n has never been tested you'd assume that
+         it would leave you with something similar to a factory install
+         although i suspect there would be a glitch or two... lucklily...
+         zapping a new factory to an sdcard is an equivalent workaround
+
+        -extroot/overlay will/may cause issues for some script logix...
+         only use this if you are prepared to report logs / are an
+         intermediate user or above... as these make upgrading difficult
+         anyway, its recommended you just point service config to a
+         usb-mount where applicable this saves the hassle of pkgdata
+         on upgrade and is handled (reasonable) transparently
+         Can fix extroot-overlay underlying issues if someone capable
+         reports the problems, would likely effect, packagerestore
+         upgrade, backup etc logix
+
+
+        -luci_statistics will fail to start if collectd-mod-x is not
+         installed and is enabled in /etc/config/luci_statistics > module,
+         as firstboot scripts setup these modules... and sysupgrade
+         auto-removes packages you have removed... i'd suggest just leaving
+         all modules installed for now and possibly cp statistics config
+         file pre/post upgrade if you want to disable some default modules...
+
+
+        -rc.local style scripts should be placed in /etc/custom/startup ...
+         see examples there and make sure to add to sysupgrade.conf avoid
+         editing rc.local but if there is a real need ask on the support page
+         and we'll work something out...
+
+
+        -sdcard writes... unlike a stock image, this build makes use of sdcard
+         storage to keep traffic / statistical data across reboots. if you are
+         averse to any disk writes, you can disable this option. given the cost
+         of sdcards, the infrequency of reboots, and the utility of persisent
+         data ... this is generally a functional win.
+         if you wish to store your data somewhere other than the default...
+         like an attached usb device... you should also disable this...
+
+        -procps-ng-{ps,df,top?} will likely create issues with some of the custom
+         scripts within the build, avoid installing them or discuss on the forum
+         tar, gzip
+        
+        
+        
+        
+        ####################### oldmsgs
+
+        20201110
+                -master has been fairly volatile of late... no builds currently...
+                         and for forseeable future ( few weeks minimum )
+
+
+
+		NOTE: 20201109 changes in master have placed a cloud around the operation
+              of opkg install from non-core/luci/base feeds ( and inconsistency
+              from imagebuilder ) .... until confidence is restored in it's
+              reliability... any opkg operations which are discussed below...
+              may not be considered reliable... this also means that the frequency
+               / availability of 'stable' builds will be affected...
+
+    
+    
+
+    ###########################################  old-release-progression-notes
+    
+    release-1.0>1.1>1.2>1.3>1.5>1.7>1.9>11-13(unstable)>1.15-17(almoststable-testing-elfdat)
+            2.3.505
+            2.3.551 testing
+
+    
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    IMPORTANT: build users running pre r15199 releases are advised to update
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    https://forum.openwrt.org/t/rpi4-community-build/69998/329?u=wulfy23
+
+    
+    
+    
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    IMPORTANT: build users running pre r15530 releases are advised to update
+    https://forum.openwrt.org/t/security-advisory-2021-01-19-1-dnsmasq-multiple-vulnerabilities/85903
+
+
+
+
+

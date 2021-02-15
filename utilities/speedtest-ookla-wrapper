@@ -1,0 +1,556 @@
+#!/bin/sh
+#echo "currently broken @ r15467"; exit 0; #set -x
+#[root@dca632 /usbstick 48°]# ./speedtest-ookla #Command failed: Not found #set -x wait...
+
+#speedtest-ookla cron leavesqm #doesnotwork
+#speedtest-ookla cron #doesnotwork
+
+
+
+
+TMPd="/tmp"
+
+
+WGET="wget --no-parent -q -nd -l1 -nv --show-progress "
+Gbase="https://raw.github.com/wulfy23/rpi4/master/utilities"
+Bname="speedtest-ookla"
+
+
+
+
+
+
+fails() {
+    echo "$1" && exit 1
+}
+
+
+sqmstop() {
+
+if [ ! -z "$LEAVESQM" ]; then return 0; fi
+if [ ! -z "$SQMRUNNING" ]; then
+    SQMSTART=1
+    if [ -z "$ISCRON" ]; then
+    	/etc/init.d/sqm stop 2>&1 | sed 's!SQM!#SQM!g' | grep -v 'Command'
+    else
+    	/etc/init.d/sqm stop 2>/dev/null
+    fi
+fi
+}
+#if [ "$(ls -1 /tmp/run/sqm/ 2>/dev/null | wc -l)" -gt 0 ]; then #cat /tmp/run/sqm/eth1.state
+
+
+
+sqmstart() {
+
+if [ ! -z "$LEAVESQM" ]; then return 0; fi
+if [ ! -z "$SQMSTART" ]; then #if [ "$SQMSTART" = "1" ]; then
+    #/etc/init.d/sqm start 2>/dev/null | sed 's!SQM!#SQM!g' #/etc/init.d/sqm start
+
+    if [ -z "$ISCRON" ]; then
+    	/etc/init.d/sqm start 2>&1 | sed 's!SQM!#SQM!g' | grep -v 'Command'
+    else
+    	/etc/init.d/sqm start 2>/dev/null
+    fi
+fi
+
+}
+
+
+
+
+
+
+
+
+
+if [ ! -f /root/median.awk ]; then
+    #echo "$sepE Creating /root/median.awk"
+cat <<'EOF' > /root/median.awk
+#/usr/bin/env awk
+{
+    count[NR] = $1;
+}
+END {
+    if (NR % 2) {
+        print count[(NR + 1) / 2];
+    } else {
+        print (count[(NR / 2)] + count[(NR / 2) + 1]) / 2.0;
+    }
+}
+EOF
+chmod +x /root/median.awk
+fi
+
+
+
+
+
+
+
+
+BFULL="/usr/sbin/$Bname.real"
+
+
+
+
+
+
+handleallparams() {
+
+	#local FN="handleallparams"
+	#echo "$FN> 1 $1"; echo "$FN> 2 $2"; echo "$FN> all $@"; sleep 3
+
+	set -- "${@}"
+
+	while [ "$#" -gt 0 ]; do
+
+		#echo "param: $1"
+
+		case "$1" in
+		--help) #--help|-h|help)
+			echo YES | $BFULL --help; exit			
+		;;
+		-h|help) #--help|-h|help)
+			usage && exit
+		;;
+		-D) DEBUG=1; ;;
+		simple) sACTION="${1}"; ;;
+		leavesqm) LEAVESQM=1; ;;
+		-*) 
+			cmdParam="$cmdParam $1"
+		;;
+		*)
+			customParam="$customParam $1"
+		;;
+		esac
+
+		shift
+	done
+
+}
+
+
+
+usage() {
+
+
+cat <<VVV
+
+	$0
+
+		##################################### cmd params
+		--help
+		-[X]
+
+		##################################### wrapperparams
+		-h|help
+		cron
+		stats
+		-D			debug
+
+		leavesqm		dont try to stop sqm
+
+VVV
+
+}
+
+
+
+
+
+
+
+
+#set -x
+ALLPARAMS="${*}" #ALTERNATE-ASSIGN-PROPERPARAMS@PROBABLE dump all to file and use 'stats' post dump
+handleallparams ${*}
+#echo "      allparams: $ALLPARAMS"; echo "    customParam: $customParam"; echo "       cmdParam: $cmdParam"
+######### we dont use above yet
+#sleep 3
+#echo "DONKEY"; exit 0
+
+
+
+
+if [ ! -f "$BFULL" ]; then
+    echo "Download: $Bname"; sleep 1
+
+    $WGET -O $BFULL "${Gbase}/$Bname" || fails "dlprob"
+    chmod +x $BFULL
+    
+    echo "run> /usr/sbin/$Bname"; sleep 1
+fi #$WGET -O /usr/sbin/$Bname "${Gbase}/$Bname" || fails "dlprob"
+
+
+
+
+
+Dy=$(date +%Y%m%d-%H%M)
+OUTFILE="/tmp/$(basename $0)-result-$Dy"
+
+
+
+
+
+if [ -z "$1" ]; then sACTION="simple"; fi
+if [ "$sACTION" != "simple" ]; then
+	while [ "$#" -gt 0 ]; do sACTION="$sACTION $1"; shift; done
+fi
+
+
+
+if echo $sACTION | grep -q cron; then
+	ISCRON=1
+fi
+
+if echo $sACTION | grep -q stats; then #NOTE this breaks any param dumps stats@fullrun to handle user params
+	ISSTATDUMP=1
+
+
+	DUMPSUMMARY=1
+fi
+
+#ISSTATDUMP=1
+
+
+
+if [ -z "$ISSTATDUMP" ] && [ ! -z "$sACTION" ]; then #PUT sACTION into cmdPARAMS
+	cmdPARAMS="${sACTION}"
+	sACTION="simple"
+fi
+
+#@@@hackworkaround for $0 leavesqm
+if [ -z "$sACTION" ]; then #PUT sACTION into cmdPARAMS
+	#cmdPARAMS="${sACTION}"
+	sACTION="simple"
+fi
+
+
+
+
+
+
+if [ -f /etc/init.d/sqm ]; then
+    SQMINSTALLED=1
+fi
+
+
+
+if [ ! -z "$SQMINSTALLED" ]; then
+
+    if [ "$(ls -1 /tmp/run/sqm/ 2>/dev/null | wc -l)" -gt 0 ]; then #cat /tmp/run/sqm/eth1.state
+        SQMRUNNING=1
+    fi
+
+    if /etc/init.d/sqm enabled 1>/dev/null 2>/dev/null; then
+        SQMENABLEDservice=1
+    fi
+
+fi
+
+
+
+
+#DEBUG=1
+if [ -n "$DEBUG" ]; then
+	echo "             fullcmd: $BFULL"
+	echo "        OUTFILE(pfx): $OUTFILE"
+	echo "  sACTION(allparams): $sACTION"
+fi
+#exit 0
+
+
+
+#set -x
+
+
+case "$sACTION" in
+    *) sqmstop; ;;
+    nostop) :; ;;
+esac
+
+
+case "$sACTION" in
+    simple) echo YES | $BFULL ${cmdPARAMS} 2>/dev/null; ;; #start at bottom #exit 0
+esac
+
+
+
+
+
+
+
+
+runspeedtest() {
+
+
+    echo "########## running speedtest: $Dy" #echo "########## running speedtest: $Dy" >&2
+
+
+    CTn=$(conntrack -L 2>/dev/null | wc -l)
+    echo "CT=\"$CTn\""
+
+
+    if [ ! -z "$SQMINSTALLED" ]; then
+
+
+    echo "SQMRUNNING=\"$SQMRUNNING\""
+    echo "SQMENABLEDservice=\"$SQMENABLEDservice\""
+
+    if uci show sqm 2>/dev/null | grep enabled | grep -q "'1'"; then
+        #echo "SQMENABLED=\"1\""
+        echo "SQMENABLEDconf=\"1\""
+
+        for SQMinst in $(uci show sqm | grep queue | sed 's!=queue!!g'); do
+         
+            INSTOPTS=
+
+            #sqm.wan.interface='cake'
+            #sqm.wan.qdisc='cake'
+            #sqm.wan.download='49470'
+            #sqm.wan.upload='16980'
+            #sqm.wan.script='layer_cake.qos'
+
+            INSTOPTS="$INSTOPTS $(uci -q get $SQMinst.qdisc)"
+            INSTOPTS="$INSTOPTS $(uci -q get $SQMinst.interface)"
+            INSTOPTS="$INSTOPTS $(uci -q get $SQMinst.download)"
+            INSTOPTS="$INSTOPTS $(uci -q get $SQMinst.upload)"
+            INSTOPTS="$INSTOPTS $(uci -q get $SQMinst.script)"            
+            
+            echo "SQMINSTANCE=\"${SQMinst} ${INSTOPTS}\""
+
+        done
+    
+    else
+        echo "SQMENABLEDconf=\"\""
+    fi
+
+
+
+
+
+
+    fi #end ! -z INSTALLED
+
+
+
+
+
+	if [ ! -z "$DEBUG" ]; then
+
+    		echo "echo YES | $BFULL --unit=kbps 2>/dev/null | grep -e ': ' > $OUTFILE"
+		sleep 3
+	fi
+    echo YES | $BFULL --unit=kbps 2>/dev/null | grep -e ': ' > $OUTFILE #| tee -a $OUTFILE
+
+
+
+
+
+
+
+    cat $OUTFILE | while read LINE; do
+    case "$LINE" in
+        *"Server: "*)
+            SERVER=$(echo "$LINE" | cut -d ':' -f2- | cut -d' ' -f2-)
+            echo "SERVER=\"$SERVER\""
+        ;;
+        *"ISP: "*)
+            ISP=$(echo "$LINE" | cut -d ':' -f2- | cut -d' ' -f2-)
+            echo "ISP=\"$ISP\""
+        ;;
+        *"Latency: "*)
+            #latency
+            LATENCY=$(echo "$LINE" | cut -d ':' -f2- | cut -d'(' -f1 | sed 's! !!g' | sed 's!ms!!g' | cut -d'.' -f1)
+            echo "LATENCYms=\"$LATENCY\""
+            echo "$LATENCY #$Dy" >> $TMPd/$(basename $0).latency
+            #jitter
+            JITTER=$(echo "$LINE" | cut -d ':' -f2- | cut -d'(' -f2 | cut -d')' -f1 | sed 's! !!g' | sed 's!jitter!!g' | sed 's!ms!!g' | cut -d'.' -f1)
+            echo "JITTERms=\"$JITTER\""
+            echo "$JITTER #$Dy" >> $TMPd/$(basename $0).jitter
+        ;;
+        *"Upload: "*)
+            UPkbps=$(echo "$LINE" | cut -d ':' -f2- | cut -d'(' -f1 | sed 's! !!g' | sed 's!kbps!!g' | cut -d'.' -f1)
+            echo "UPkbps=\"$UPkbps\""
+            echo "$UPkbps #$Dy" >> $TMPd/$(basename $0).up
+        ;;
+        *"Download: "*)
+            DOWNkbps=$(echo "$LINE" | cut -d ':' -f2- | cut -d'(' -f1 | sed 's! !!g' | sed 's!kbps!!g' | cut -d'.' -f1)
+            echo "DOWNkbps=\"$DOWNkbps\""
+            echo "$DOWNkbps #$Dy" >> $TMPd/$(basename $0).down
+        ;;
+        *"Packet Loss: "*)
+            if echo "$LINE" | grep -q 'Not avail'; then
+                : #PACKETLOSS="0"
+            else
+                PACKETLOSS=$(echo "$LINE" | cut -d ':' -f2- | cut -d'%' -f1 | cut -d'.' -f1 | sed 's! !!g')
+            fi
+            echo "PACKETLOSSpct=\"$PACKETLOSS\""
+        ;;
+
+    esac
+done
+    
+
+#if [ -n "$DEBUG" ]; then
+#	echo "cat $TMPd/speedtest-ookla.down | cut -d' ' -f1 | awk -f /root/median.awk | cut -d'.' -f1"
+#	sleep 2
+#fi
+
+
+    MEDIANdownS=$(cat $TMPd/speedtest-ookla.down | wc -l)
+    echo "################ median-down samples: $MEDIANdownS"
+    MEDIANdown=$(cat $TMPd/speedtest-ookla.down | cut -d' ' -f1 | awk -f /root/median.awk | cut -d'.' -f1)
+    echo "MEDIANdown=\"$MEDIANdown\""
+     
+    MEDIANupS=$(cat $TMPd/speedtest-ookla.up | wc -l)
+    echo "################ median-up samples: $MEDIANupS"
+    MEDIANup=$(cat $TMPd/speedtest-ookla.up | cut -d' ' -f1 | awk -f /root/median.awk | cut -d'.' -f1)
+    echo "MEDIANup=\"$MEDIANup\""
+
+    MEDIANlatS=$(cat $TMPd/speedtest-ookla.latency | wc -l)
+    echo "################ median-latency-ms samples: $MEDIANlatS"
+    MEDIANlat=$(cat $TMPd/speedtest-ookla.latency | cut -d' ' -f1 | awk -f /root/median.awk | cut -d'.' -f1)
+    echo "MEDIANlatency=\"$MEDIANlat\""
+
+    MEDIANjitS=$(cat $TMPd/speedtest-ookla.jitter | wc -l)
+    echo "################ median-jitter-ms samples: $MEDIANjitS"
+    MEDIANjit=$(cat $TMPd/speedtest-ookla.jitter | cut -d' ' -f1 | awk -f /root/median.awk | cut -d'.' -f1)
+    echo "MEDIANjitter=\"$MEDIANjit\""
+
+
+#fi
+
+
+
+    if [ ! -z "$DUMPSUMMARY" ]; then
+        dumpsummary
+    fi
+
+}
+    
+
+
+
+
+dumpsummary() {
+
+echo "############## dl-best-times"
+cat $TMPd/speedtest-ookla.down | sort -n | tail -n 3 | sed 's!^!#!g'
+
+echo "############## dl-worst-times"
+cat $TMPd/speedtest-ookla.down | sort -n | head -n 3 | sed 's!^!#!g'
+
+echo "############## up-best-times"
+cat $TMPd/speedtest-ookla.up | sort -n | tail -n 3 | sed 's!^!#!g'
+echo "############## up-worst-times"
+cat $TMPd/speedtest-ookla.up | sort -n | head -n 3 | sed 's!^!#!g'
+
+echo "############## lat-best-times"
+cat $TMPd/speedtest-ookla.latency | sort -n | head -n 3 | sed 's!^!#!g'
+
+echo "############## lat-worst-times"
+cat $TMPd/speedtest-ookla.latency | sort -n | tail -n 3 | sed 's!^!#!g'
+
+}
+
+
+
+
+
+
+
+
+    case "$sACTION" in #echo "DBG sACTION $sACTION"
+        *"simple"*) :; ;; #runsattop-skip-here-parsestartagain-below
+        *"cron"*)
+            #@@@if CT -gt 250 reschedule
+            runspeedtest 2>/dev/null 1>/dev/null
+        ;;
+
+        *"summary"*)
+            dumpsummary
+        ;;
+        *)
+            runspeedtest
+        ;;
+    esac
+
+
+
+
+
+#set -x
+
+case "$sACTION" in
+    *)
+        sqmstart
+    ;;
+esac
+
+
+
+
+exit 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+WGET="wget --no-parent -q -nd -l1 -nv --show-progress "
+Gbase="https://raw.github.com/wulfy23/rpi4/master/utilities"
+Bname="speedtest-ookla"
+
+fails() {
+    echo "$1" && exit 1
+}
+
+
+echo "Download: $Bname"
+sleep 2
+$WGET -O /usr/sbin/$Bname "${Gbase}/$Bname" || fails "dlprob"
+
+chmod +x /usr/sbin/$Bname
+
+echo "run> /usr/sbin/$Bname"; sleep 1
+
+uci show sqm 2>/dev/null | grep enabled
+
+Dy=$(date +%Y%m%d-%H%M)
+OUTFILE="/tmp/$(basename $0)-result-$Dy"
+
+echo YES | /usr/sbin/$Bname  --unit=kbps | grep -e ': ' | tee -a $OUTFILE
+
+#cat $OUTFILE | cut -d'.' -f1
+exit 0
+
+#echo YES | /usr/sbin/$Bname  --unit=kbps | grep -e ': '
+#/etc/init.d/sqm stop; echo yes | speedtest-ookla; /etc/init.d/sqm start
+
+
+
+
+
+
+
+
+
+
+
+

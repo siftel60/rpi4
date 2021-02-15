@@ -1,0 +1,10 @@
+1121fd8d6c2cdf72b21270e0ab73340b6b8b44c6e215e47487c20e32014a0a98 *bootfiles.tar.gz
+6b4e855a1e4f34546e6b7de16891307008115c687c2d601fecb5815b89b72553 *openwrt-bcm27xx-bcm2711-rpi-4-ext4-factory.img.gz
+e52590f04de534f7fb08354a2cd8fa0255ada9400301c0041d5dbc0dbb216177 *openwrt-bcm27xx-bcm2711-rpi-4-ext4-special.tar.gz
+a3a83613f9c0a3fa2b4957518d91e77b4f5bc0feb55aeb994e7ed2599a94128e *openwrt-bcm27xx-bcm2711-rpi-4-ext4-sysupgrade.img.gz
+5dc4446cf4692d757626d35a5b06fb950d27afb4e4b807941309cb3962fb518a *openwrt-bcm27xx-bcm2711-rpi-4-rootfs.tar.gz
+c85b1bbcad7a7c57bc7636f550dba38f8ab73d52f995618de5a79ed4f7791ac7 *openwrt-bcm27xx-bcm2711-rpi-4-squashfs-factory.img.gz
+b3dbc39485b3d7637ce802767a7df00d8f1acd6b6b39babd298cd27b57902d1a *openwrt-bcm27xx-bcm2711-rpi-4-squashfs-special.tar.gz
+e45f2018764d54ddde606bc0b851fea1912415382f3d0d29530ebe82f45f7543 *openwrt-bcm27xx-bcm2711-rpi-4-squashfs-sysupgrade.img.gz
+6716ab3f05fa871610bd6247cecff9174fbec3be3944d906a414ecd4ce903cf3 *openwrt-bcm27xx-bcm2711-rpi-4.manifest
+5d19185beb46005cc474a51c4de3aa5df48088b0f5d4b183d6fe18631391c32e *profiles.json

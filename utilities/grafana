@@ -1,0 +1,238 @@
+#!/bin/sh /etc/rc.common
+
+
+START=99 #USE_PROCD=1
+
+#IPl="10.2.3.1"
+
+chout="/GRAFANA"
+
+
+
+
+#echo "##############################3"
+if type extra_command 1>/dev/null 2>/dev/null; then
+	#type extra_command 1>/dev/null; echo $?
+	#echo "extra_command ver"
+extra_command "status" "Print status"
+else
+	#type extra_command 1>/dev/null; echo $?
+	#echo "non_extra_command ver"
+EXTRA_COMMANDS="status"
+EXTRA_HELP="	status	Running"
+fi
+#echo "##############################3"; sleep 6
+
+
+
+sepS="###########################   "
+
+
+status() {
+
+
+	if [ -d $chout ]; then
+		echo "$sepS chroot-dir: $chout [$(du -chs $chout | head -n 1 | tr -s '\t' ' ' | cut -d' ' -f 1)]"
+	else
+		echo "$sepS chroot-dir: $chout [no-dir]"
+	fi
+
+
+	if [ ! -z "$(pidof grafana-server)" ]; then
+		echo "$sepS grafana-server [running:$(pidof grafana-server)]"
+		ps wwww | grep -v grep | grep -v 'init\.d' | grep grafana
+		lsof -i -nP | grep grafana
+	else
+		echo "$sepS grafana-server [stopped]"
+	fi
+
+	
+	if [ ! -z "$(pidof influxd)" ]; then
+		echo "$sepS influxd [running:$(pidof influxd)]"
+		ps wwww | grep -v grep | grep -v 'init\.d' | grep influx
+		lsof -i -nP | grep influx
+	else
+		echo "$sepS influxd [stopped]"	
+	fi
+    
+    
+    top -b -n 1 | grep -v grep | grep -E '(influxd|grafana\-server)'
+
+	infomessage
+
+}
+#pgrep grafana-server >/dev/null && echo "grafana-server running $(pidof grafana-server)"
+#pgrep influxd echo "influxd running $(pidof influxd)"
+
+
+
+infomessage() {
+cat <<EOm
+
+    ##################################################
+
+        echo "$chout" >> /etc/sysupgrade.conf
+        #actually its better if it on an external disk
+
+        grafana server started at 3000 (admin:admin)
+
+
+        NOTE: WIP @ no idea how to setup influx user/pw/db etc
+
+
+	for manual testing: chroot $chout
+
+
+    ##################################################
+
+EOm
+}
+
+
+
+
+
+start() {	
+
+#alprfsurl="http://dl-cdn.alpinelinux.org/alpine/v3.11/releases/aarch64/alpine-minirootfs-3.11.6-aarch64.tar.gz" #~20201001
+alprfsurl="https://dl-cdn.alpinelinux.org/alpine/v3.13/releases/aarch64/alpine-minirootfs-3.13.0-aarch64.tar.gz" #20210127#NONTOP
+
+    #set -x
+
+
+	if [ ! -d $chout ]; then
+		mkdir -p $chout
+		(cd $chout && \
+			wget $alprfsurl 2>/dev/null; tar -xzf *.tar.gz; rm *.tar.gz		
+		)
+		chroot $chout apk update
+		#chroot $chout apk add ntop; chroot $chout ntop --set-admin-password=admin
+
+		chroot $chout apk add vim
+		chroot $chout apk add influxdb
+		chroot $chout apk add grafana
+        
+        	infomessage; sleep 3    
+	fi
+    
+	if [ ! -z "$(pidof grafana-server)" ]; then
+		echo "grafana-server [running:$(pidof grafana-server)]"
+	else
+    		chroot $chout grafana-server -homepath /usr/share/grafana/ & #admin admin
+		ps wwww | grep -v grep | grep -v 'init\.d' | grep grafana
+		lsof -i -nP | grep grafana
+	fi
+
+	
+	if [ ! -z "$(pidof influxd)" ]; then
+		echo "influxd [running:$(pidof influxd)]"	
+	else
+		chroot $chout influxd run &
+		
+		ps wwww | grep -v grep | grep -v 'init\.d' | grep influx
+		lsof -i -nP | grep influx
+	fi
+
+
+
+}
+
+
+
+
+
+
+
+stop() {
+    #pgrep grafana-server
+	[ ! -z "$(pidof grafana-server)" ] && kill -9 $(pidof grafana-server) 
+	[ ! -z "$(pidof influxd)" ] && kill -9 $(pidof influxd) 
+}
+
+#@@@while read
+
+
+
+
+
+
+
+
+boot() {
+	start
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#/NTOP/usr/share/grafana/conf/
+
+
+
+#root@rpi-dca6325631 /usbstick44# ps wwww | grep -v grep | grep -E '(influx|grafana)'
+# 1563 root      0:02 grafana-server -homepath /usr/share/grafana/
+# 3049 root      0:01 influxd run
+#root@rpi-dca6325631 /usbstick43# top -b -n 1 | grep -v grep | grep -E '(influx|grafana)'
+# 3049     1 root     S     778m  42%   0   0% influxd run
+# 1563     1 root     S     750m  40%   1   0% grafana-server -homepath /usr/share/grafana/
+#root@rpi-dca6325631 /usbstick44# free 
+#              total        used        free      shared  buff/cache   available
+#Mem:        1902972      126092      814612        8756      962268     1703108
+#Swap:             0           0           0
+
+
+
+
+
+
+#!@@@apk check if -d already
+#influxd    2398    root    8u  IPv4 209394      0t0  TCP 100.92.77.184:49284->65.8.33.17:443 (ESTABLISHED)
+#create database?
+
+### needs 'install||setup' command
+### needs 'install||setup' command
+### needs 'install||setup' command
+#  75 apk add vim
+#  78 /usr/bin/vim /etc/influxdb.conf +/collectd
+#  82 /usr/bin/vim /etc/influxdb.conf +/usage
+#  81 influxd run &
+# 477 ps www | grep inf
+#  478 kill -9 $(pidof influxd)
+#    480 kill -9 $(pidof influxd)
+
+#root@rpi-dca6325631 /usbstick43# top -b -n 1 | grep -v grep | grep -E '(influx|grafana)'
+# 3049     1 root     S     778m  42%   3   0% influxd run
+# 1563     1 root     S     750m  40%   3   0% grafana-server -homepath /usr/share/grafana/
+
+#root@rpi-dca6325631 /usbstick44# ps wwww | grep -v grep | grep -E '(influx|grafana)'
+# 1563 root      0:02 grafana-server -homepath /usr/share/grafana/
+# 3049 root      0:00 influxd run
+
+#chroot $chout ntop -u root -t 5 -d
+
+
+
+
+
+
+
+

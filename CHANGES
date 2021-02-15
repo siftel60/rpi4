@@ -1,0 +1,456 @@
+
+
+    ___________________________________________________   CHANGELOG
+   
+
+      -2.7.39-30 -shutdown.sh handle rpi4.qos ipset save [wip]
+                 -bootwait.sh more tweaks @ final result print and vars for report
+                 -added custom stage2 to remove errors
+                 -fwcustom handle multiwanifs quieter and promote core checks higher [wip-start]
+                 -sqm_collectd.sh multispawn workaround
+
+      -2.7.39-19 -removed wrt.ini edit @ banip(old)
+                 -rpi4.qos ipset backup and restore option ( covers all ipsets )
+                 -sqm_collectd.sh respawn workaround(removed failed)
+                 -ISRPI4@rebootwrapperFSCKfix
+                 -reboot on fsck repair
+
+
+     -r15673-33  -wrt.ini edit @ rc.local < banip bumpsoon
+                 -argon.ipk luci step workaround @ 45-luci<uci-defaults
+                7-rpi4-official-opkg.sh+mitigate.sh(wrapper)+run-mitigate.sh@github
+                  rpisysup.sh tmp adding rpi4-official to older builds (run-mitigate.sh also pulls down)
+
+
+     -r15655-55  -POWERPROFILE="quick" OOTB
+                 -BANNERROTATE="og" #and statix-on
+                 -add RPI4CMDLINEOPTS="fsckparts"@13-fsckparts appendonfboot aka default-on
+                 -PARTUUID by date + experimental usb support
+                 -rpi-support.sh add bootorder and boot / root dev print
+
+
+     -r156xx?    -collectd 'disk' defaults @ fboot (no ipk yet)
+     -2.7        -faster ntp servers sketch
+                 -dnsmasq arpwatch sketch
+                 -mwan3 hotplug 15? quiet
+                 -add perl tiny
+                 -sysupgrade exit early on image no-file
+
+
+     -r15549+    -*dnsmasq vulnfix@2.83-1
+                 -removed KMOD leds trigger default + 2 more now
+                  built-in
+                 -add ctinfo_rpi.qos testing_v2+ini options
+
+
+     2.3.757-15+ -DISABLEDSERVICES="" (mostly for wpad)
+                 -add fsck via cmdline.txt option 'fsckparts'
+                 -some sysinfo.sh and fboot .msgs tweaks
+                 -print UUID on flash et. al. verb
+
+     2.3.757-9   -71-banner alt banners
+
+    -r15470~    -NOTE test irqbalance off for a bit @ fboot-50
+     2.3.757-7  -add imageinspect + statix community image signature 
+                -fix sbin/sysupgrade help text differentiate community options
+                -add / update sysupgrade-clean-backup aka tar.gz modder
+                -also add custom backup dump script was sysupgrade-clean-backup.sh
+                -*r1546x+ official adds chan-analysis 
+                -addpkg wifischedule test
+                -!!! add ucert-full !!! TESTING-mods@fwtool.sh+terminator.sh+FKEY ib.sh unused
+
+                -start to clean fw.custom add integrated bcp test code
+                 wan-detect/multiiface/iniVSenabled needs fixing
+                 should exit if existing config found
+                 need to rename
+                -add wrapper and median to speedtest-ookla
+                -geoipupdaterscript+iptgeoip!@xt-addons note:pkg removed breaks sysupgrade todo: fix/workaround sysup issues
+                  NOTE: updated list is 8M default is 4 so leave up to user
+                   or locate 'compressing' code etc.
+                   or remove the largest lists?
+
+    -r15371     -add LUCIQRCODES=1 on by default
+                -add fboot-02-wrt.ini migrate(add) default options QR+UPGRADEsFLAVOUR
+                -add banip pr ipv6 fix
+                
+
+    -r15323     -some package restore tweaks testing@summaries likely less functional at this stage
+                -FV:25091+ ~fixed ALTUART=1 bug
+                -99-remtxt incorrect VAR ?>PKGREM
+                -shutup modemmanager on ifbhplug@ModemManager.common
+                 also add some dbus autoenablestart in hplug/net/mm + exit if no -f /etc/init.d/mm
+                -add statix lucioverviewboard-arch@fboot/55-cty+/bin/luci-rpiboardarchfix...
+                -97-TZ was missing payload and had server hardcoded
+                -add restorefiles.sh 'backuplist' @ customcopy ( next iteration )
+                -add quagga conffiles to 70-backup@fboot i.e. sysupgrade.conf adds
+
+
+    r15233      -added simple-adblock+hplugifacemod NOTE: extra only
+                -wrapper uci 2>/dev/null fix
+                -checkinternet early httping-loop ( bypass extra checks )
+                -files ashfunctions and bashfunctions rename old 'service'
+                 function... ( wip->remove ) as 'service' is upstream
+                -#NOPE@dbus :* leave modemmanager enabled by default... testing seems sane
+                -*mwan3 bump
+
+                -Sv15+ restorepackages.sh checkinternet.sh 99-tap 99-try tweaks WIP
+                 comment actions, packagesinstall.txt --checksum, exceptions(vim-etc)into-restorepackages.sh
+
+
+    ################################################################@
+    r15199      -silence json errors on no wan @ sysinfo.sh
+    2.3.637     -added a few additional perl mods (next release)
+                -openvpn 2.5 https://git.openwrt.org/?p=feed/packages.git;a=commit;h=2e55fc8b2d42682cd1c26e9827b7b6f47fb51398
+
+    r15169      -add 'test' board.d ucidef eth1 wan + test sysinfo
+                -sysinfo route and wifi status bits - wip
+
+    after       -add #kmod-usb-net-sr9700 + kmod-usb-net-dm9601-ether (100M?) wrongmodspatchtest@sr9800
+                -bc for script decimal operations ... i.e. tmp/humidity
+    20201203     possiblyrevisepackagein3months
+    allbuilds    image was smaller? ### has to be files ???
+
+
+
+    r15129      -udhcpc/odhcp6c debug options +/- netifd proto dhcpv6.sh etc. etc.
+    or FVER     -add variant to rpi-support.sh
+    25039       -MNOTES: netifd bumps... ? musl refresh
+    2.3.611      
+
+
+    NOTE:       -@r15102 imagebuilder errors on irqbal, modemmanager + php 'checksum' ( not faillogs ) 
+                  (+15082)
+
+    2.3.575+    -remove upstreamed 80_mount user migration workaround
+    r15082~     -disable irqbalance by default for a while to eliminate it re:ppp-ipv6
+                  (note: users should also try the std image)
+
+
+    2.3.569     -built from alt mirror as downloads.openwrt.org not updated for days
+                  due to this kmods are inaccessible without editing distfeeds.conf
+
+    2.3.5x?     -add ipv6dhcp ini based debug + opts 
+
+
+    NOTE:       -@237-r1499~6-6e9b707ee2 uqmi/qmi dhcp patches
+                -also prev build wireless seems better... probably patch from around 20201122~+- non-pi-specific
+                 ( proto-init-ish )
+
+
+
+    2.3.505     -two variants fullest/extra=normalfornowmanypackages std/halffull=basicpackagelist
+                -minor checkinternet fixes wip to better handle downloads.openwrt down condition
+
+
+
+    NOTE:       -5.4.75-1 r14904
+                -ib errors no kmods uploaded via buildbot and wireguard segfaults
+                -sysupgrade-v commits
+
+
+
+    2.3.135-21+ -as below sysup support wrt.ini@luci UPGRADEALTLOGIC
+                -also supports migration of 'in-use' additional dtbos
+
+    2.3.135-10  -large sysupgrade tar bug workaround console firstreboot
+                -(edit: this was due to test of dockerman pulling in
+                  full tar... and benign -dockerman)
+
+
+    2.3.97x     -add px5 standalone
+
+    2.3.95x     -rng crypto testing persistdata ISIB workaround
+
+
+    2.3.73-11+  -init.d/custom broken @ new extra_commands
+                -ffmpeg@gitinstaller
+
+    2.3.70-5+   -temporary mwan3 lock stop @ 15-services https://github.com/openwrt/packages/pull/13853
+                 https://github.com/openwrt/packages/issues/13704
+                -99-try argon twice :(
+
+    2.3.70+     -more packages modemmanger (dbus to be sorted on default for now)
+                 luci-app-watchcat... httping, noping?, iptables6natstuff...
+                 some kmod l2tp stuff
+
+    2.3.57-3+   -luci@bootstrap->sysauth LUCIQRCODES=1
+                -added /etc/luciqrcodes.txt for alternate device ssid/pw
+                 needs option above
+
+    r14855      -seems better
+    r14850      -ibbroken@repostories.conf,opkg changes
+
+
+    2.3.11-29   -packagesinstall.txt + rewrite of -R to use opK generated
+                 pkg diffs
+
+    2.3.11-9      
+                -firewall.custom clobbered a-la rc.local style... @uci-defaults 01
+                 start to check VERSION || overwrite || source dir || etc. etc.
+
+                -some bug @ r14779 || persistdata fboot plog re: ecmd firstboot
+                 not printing to console
+
+
+
+    ################################################################@master
+    2.3.7+      -snapshot+ busybox kernel mwan-pr
+                -zoneinfo update / time fixes
+                -procd-non-selinux, various-hostapd/wpa, uci bump
+                -banip + adblock bump
+
+                -NB: https://github.com/openwrt/openwrt/commit/de7ca7dafadfd650d031e0379ce0c002868d5936
+                 @base-files 233 broke upgrade / restore ( preinit/80 passwd merge 'rom' )
+                 @2.3.11-2_r14779 testing ~ubusd non-root~
+    ################################################################
+
+
+    2.3.6-32+   -add sysupgrade help
+                -confdiff add some ini hooks and start generify working dirs
+                -fix some minor rpisysup.sh bugs
+                -remove updatecheck missed count for git
+
+    2.3.6-29+   -updcheck@git dlprob fix-ish
+                -confdiff beta no hooks
+                -shutdown+pnlb trim output
+                -fix some minor rpisysup.sh/sysinfo.sh/rpi-sysup-online.sh bugs
+                -fix some minor fboot cronadd bugs/verbosity
+                -tweak no LOGPERSIST donothing
+
+
+    2.3.6-23+   -more work on below -> start testing disabling PERSIST{log,stat,nlb,etc} (+dyn cron rm)
+
+    2.3.6+      -improved plog-ic @was shutdown only now @boot+cron+shutdown... needs spacechecks
+                 and ini hooks revisions (defaulton) also duplicate 73-cronadd > init.d/persistdata
+                -some work on opkg.lock bug @ sqmdscp todo @ packagerestore.sh
+                -have updatecheck.sh check git repo not snapshots (default stable @ fb-4model-55
+                -fwcustom dscp logic some-fixes
+
+    2.3.x        whatchanged@official: netifd, fstools, wifihandling... non-pi led-stuff-labels...
+
+    1.17.x      -rpi-sysup-online.sh(getgit)/rpisysup.sh(git)
+    1.15-60+    -rpi-support.sh minor logic + -b (brief)
+                -iptables-mod-extra@sqmdscp addrtype~
+
+    1.15.50+    -tweak / refine sqmdscp -> bug on sysupgrade dnsmasq.conf ipset file gone
+                 nostart
+                -banip > advanced > wrt.ini [edits]
+                -+kmod-dummy
+
+
+    1.15.33+    -cron add persistent graphs powerloss save jobs(duped@fboot-7x+initd)
+                -hashlimit ib<ipk + sqmdscpadjust-consoles-maclist-option/inittweaks/etc
+                -wrtini lua sample @ banip
+                -+iptables hashlimit
+
+
+    1.15.17-33  -disable runtime wifi init logic (luci-apply-logic)
+                -bug in firstboot ~checkinternet.sh->no connection missing break
+                -probable ongoing minor adjustments to sysupgrade / preinit re: usb support 
+                -start to clean/finalise persistentnlbwmon + related cron setup/s etc.
+                -experimental fwcustom>sqmdscpadjust
+                -persistentlucistat psave ( both need cron add logix )
+
+
+    r145xx      -integrate latest boot firmware (elf+dat)
+    1.15.xx     -speedtest-ookla > git/utilities ( free 2Mb in image )
+                -mount-utils
+                -rough and likely non-perfect
+                -revert or disable most items listed below in TESTING
+
+
+    r14475      -testing / repairing some broken stuff
+    1.13.57     -autorestore packages should now be default disabled
+    TESTING      (but creates /autorestore.sh~ to check and run)
+                 sysupgrade -R is not optional as is ini AUTORESTOREENABLE
+                -disk tools: blockdev, parted, mount-utils
+                -nlbwmon persist semi broken half way -> wip > @wrapper & cron
+                -some multiboot prep vars / tools
+                -buildscript tweaks @pkg debugging
+                -fw update files
+                -argontheme 2.2.5 testing ( not-enabled )
+                -argononefan autosetup
+                -fboot pkg add > restorepackages initial (i2c@argonone-25dtbo) 
+                -persist-nlb / hooks / wrapper / sysup / boot / save post fboot tar.gz etc.
+                -sysinfo vl805 version
+                -partition-expand drafting
+                -kmod-macvlan testing
+                -25dtbo>prep for more overlays
+                -silence collectd sqm unknown cases to one message per boot
+
+
+    r14465      -mwan3ipkgitonly->pr-soon-manual-install-doable
+    NOPUB       -rem mailpkgs... postinstalldoable
+                -disableautorestore-99-tap+improveparseralerting
+                -minor rollbacktimerfixes, offimage multibootwork+++
+                -add blockdev+ar
+                -speedtest-ookla
+
+    1.13.?      -mwan3 experimental ipk@2.10.0-1
+    r14443      -disabled luci-mod-dashboard fails to find luci-lib-base
+
+    1.11-13.x   -multiboot foundations init special.tar.gz-gen+setup.sh
+    NONSTABLE   -gdisk sfdisk usb-serial-qualcomm minicom
+    I.E.        -mailsend msmtp
+    TESTINGIMGS -opkg https finite changeover@opkgconfs/fbootseds
+    ONLY        -pkg ssl selection adjustments to exclude wolf defaults
+    @r144xx     -trial luci-mod-dashboard
+
+    1.9.+       -nano colors
+                -update argon > 2.2.3-5<(2.1.1@20200725) @ 20200901ish
+
+
+    1.9.x       -early boot systeminfo / state / clean / init work
+    r14315      -ethtool resize2fs dmesg
+                -explore expand / recover / dual boot options
+
+
+    1.7.x       -message routing tweaks plus maintainer auto debug option
+    ~r14276     -custfunctions work
+                -nlbwmon buffersize double to be safe connection heavy lans
+                -fboot ntpserver something...
+
+                -below and above seeding for adminlogs-multi-release-persistence ff restorepkgs.sh initd rc.custom shutd sysup
+                -/etc/config > restorefiles/date each firstboot early+late + installed_packages.txt copy etc. etc.
+
+    1.7.x       -implement basic autopkgrestore then improve non community dont apply logic or user dont apply NOAUTORESTORE
+                -as above implement checkinternet.sh tweaks to checkinternet.sh
+                -fboot generify a little -> wip 97-wifi vs 4-model-b wifi sketchtaskstweaks
+                -fboot tidy general lucicommands docmd restorepackages.sh<>rpi-support
+                -implement basic persistdata/plog/logpersist/shutdown
+                -add full patch package
+                -busy base64
+                -add collectd mod entropy processes
+
+
+    1.5.15-11+  -lucisshon
+                -argon color raspberry plus random wip
+                -minor updatecheck.sh fixes wip
+
+
+    1.5.15-5    -cleanup persist on sysupgrade
+                -buildinfo extensions
+                -adblock defaults
+                -perftweak refine
+                -finer prompt temp thresh
+
+
+    20200815+   -wifi ac alterations
+                -hostapd-utils
+                -ipv6-pd login info
+                -handle keep.d base-files/essential profile.d/rc.local
+
+
+    20200813+   -wifidefault-gen on vanilla [on]
+                -utils tidy
+
+    20200811+   -rootfs.tar.gz
+                -firstboot service/odhcpd logic
+                -bootwait-core > init.d
+                -zoneinfo-<all    
+
+    1.2.11-37+  -collectd bootwait
+
+    1.2.11-35   -persistent nlbwmon
+    1.1.50-11   -irq and conntrack statistics
+                -draft wifi-ap helper script
+                -draft sqm speed adjust script
+
+    1.2.11-27   -extra utils
+    1.1.50-9    -ntfs-3g comment out in /etc/filesystems
+                -backupscript rework
+                -diskspeed check script shell
+
+    1.2.11      -coreutils-sleep inotifywatch
+                -peristent_statistics
+                -hdparm hwinfo
+
+    1.1.67      -add bcm27xx-userland
+                -profile aesthetics tweaks
+
+    1.1.50      -sqm, adblock and banip default enabled
+                -dtbo case button/led setup, altuart
+                -RCSHDDIR + RCSHBASH wrt.ini
+
+    1.1.17      -add https-dns-proxy
+                -remove luci-theme-openwrt-2020
+
+    1.1.15      -expedite setup scripts
+                -sqm-collectd auto setup
+                -banner tidy
+
+    1.0.91      -/etc/packagesremove.txt check and rem
+                -experimental
+
+    1.0.23      -luci theme setup options <- test argon
+                -distfeeds core|base|luci off by default
+                -stop vpn-policy-routing log spam
+                -add luci-app-wol edit:-cryptsetup
+
+    1.0.3       -seperate git-repo rpi4-opkg for repos
+                 due to space constraints
+                -add init.d/ntop (loose defaults warning)
+                -core optimisation tweak
+                -disable update checking via wrt.ini
+                -top smp support
+
+    1.0.1-2     -add missing luci theme ( bootstrap )
+                 disable mwan3, e?, etc.
+
+
+    
+    WIP         -dtbo generator / templates
+                -wan eth1 auto-setup et.al.
+                -fix usbstick autobackup/restore
+                -smp tweaks
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    ################################## official-notes
+ 
+
+    r15615* kernelbump 5.4.92 fpost re: high sirq@iperf
+
+
+    r15596@stage2 masqfix2 ~ 2.3.779ish
+    111de654afe0703e3909bc83bfd00a2de4260062 glibc BTI_BZ_PIE
+    *r15595~ base-files version name change and 29167cbca3653de05a8b915bc21327dac7d05174
+             append metadata mangling
+    *r15501 some hostapd cleanup
+    *r15466ish+ iptables update + chan-analysis 
+    *r15403 hostapd failed -> ib fails openssl...
+     (perl too)
+    -r15385 no kill wireless on teardown
+    -r15371-post + sysupgrade conffiles function
+    !~r15250ish no luci https redirect and px5g-wolfssl -> -px5g-wolfssl soon
+    !r15199
+    882ca13d923796438fd06badeb00dc95b7eb1467 openssl : update to 1.1.1i Fixes: CVE-2020-1971
+    dropbear + wolfssl fixes f31c9cd383b2d4e694b774575e4261ee97140f77 064d65c2f76409759ac8d72268f2558c7b55f3b3
+    !r15178 3f165fa7ccc24a1927483457cd2a20511460550f kernel: bump 5.4 to 5.4.82
+            dd3464023f1836ef4fa417509830aaf5618b9ae9 odhcp6c: logicfixes
+            lldpd: fix autoreconf failure
+    r15171  Bnogitduetoodhcp6cabove
+    r15169   -add 'test' board.d ucidef eth1 wan + test sysinfo
+    tmptest  ~*netifd network user
+    repo
+    !r1515x
+            -sysinfo route and wifi status bits - wip
+    !fPICinstead-fpic-arm64
+    !r15139
+    !service command @ shinit
+    !k>5.4.81@2abc55b
+
+    ?>remove ubus path downgrade? not yet
+
+    !procd:outputwarninguser'ubus'no exist @4dc5b647602dc33be9bc940e91e5b849fdc98015
+    !ubus: makeubusd startincaseuser'ubus'noexisto @533895e05e62db8cd3e7d12eb384a08058088388
+
+
+

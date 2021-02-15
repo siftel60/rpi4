@@ -1,0 +1,21 @@
+
+
+    ####################################### UTILITIES
+
+
+    -putty)     may be of use
+
+    -others)    probably never needed as there are
+                better alternatives or are stale
+
+    tar.gz -> / && tar -xvzf FILE.tar.gz
+    
+    rpisysup.sh is a tmp file and should be used in
+    /tmp... no need to get this manually
+
+    .sh || raw-bin probably can go straight to /bin
+
+
+
+
+

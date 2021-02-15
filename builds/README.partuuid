@@ -1,0 +1,185 @@
+    
+
+        NOTE: usb_testing > partuuid_testing ready for beta testing
+        #############################################################
+        (well, moderate to advanced users with manual and dd backups
+        should be ok?)
+
+
+        https://forum.openwrt.org/t/rpi4-community-build/69998/502?u=wulfy23
+
+        SIMPLIFIED NOTES
+
+            -best to use another disk or dd backup your mmc ( plus normal backups as usual )
+            
+            -non-factory installation (sysupgrade) and wish to switch disk around later
+             update cmdline.txt with root=PARTUUID=abcdefgh-0N
+            
+            -backup restore from alternate disk or old above applies ( before reboot )
+             (note: of you started on mmc flash this and stay on mmc then root=/dev/mmcblk0p2 if fine )
+
+            -use a low power requirement usb disk if using on usb
+
+            -see forum-post/rpi-documentation re: boot-order... by default... the mmc needs to
+             be removed in order to attempt to load from usb drive
+
+
+
+
+
+
+
+
+
+        ############################################ VERBOSE/original NOTES
+
+
+        NOTE: usb_testing is NOT for general consumption...
+
+
+        UPDATE: seeing an issue with UE300 bouncing into CDROM mode on these
+                builds... early days... edit: smallusbdrive seems better...
+                power/uas related...? (probably both)
+
+        UPDATE2:seems like opkg over ipv6 to downloads.openwrt is not happy...
+                probably related to opkg upgrade testing ( wget-ssl? )
+                or could a broader resolution thing related to cdn
+
+
+    KNOWN BUGS: ~r15635+ broken argon login splash page
+                https://github.com/jerrykuku/luci-theme-argon/issues/114
+                -sqm_collectd.sh luci stats worker possible respawn issue (mainline?)
+                -as above re:uas/ssd likely existed on older builds also
+                -may contain legacy banip wrt.ini luci code (whilst migrating)>system>startup
+                -new banip version no migrated older configs
+                -probable luci_statistics minor oddities or manual migration / refresh / required
+                -as below re: (manual runtime/other) config restore @ cmdline onto altdisks
+                -debugging spam
+                -likely a few places/auxillary scripts that grep root= for /dev/
+                 which need to be updated to handle PARTUUID
+                -real uuid non-uniq afaik unused by openwrt except in additions to config/fstab
+                 (limited exposure would need two os disks plugged and an fstab-uuid mount)
+
+
+                best tried on a new usb/mmc disk ( it is not specific to usb
+                and makes the disk pluggable either way  )... or dd backup
+                your mmc if you are game to sysupgrade over that... ( due 
+                to cmdline.txt being part of the backup... you'd have to 
+                update your root=PARTUUID=ABCDEFGH-02 this is not mandatory
+                and only really help is the disk is inserted / copied to a
+                non-mmc slot  )
+
+
+
+            -experts or separate disk + serial ideal
+            -dd backups of your existing disks should be made
+             if applying to previous installs
+
+
+            -during beta/testing advise not to put two disks in at once...
+             (tho' i've done it the whole time and not had issues)
+
+            -best flashed to a new disk... (but sysupgrade capable with hand edit of cmdline.txt)
+
+            -note: on usb2 flashing takes approx 12mins + 3mins for firstboot init
+             ( approx 3xslower dont have usb3-disk to test with )
+             correction... that was a usb3-sdreader... usb3-ssd@5years old is comparable to mmc
+             read seems faster
+
+            -if you restore config files... do not restore cmdline.txt ( clone/setup root=PARTUUID= )
+
+            -if you use sysupgrade on your existing mmc... optional but recommended to update your
+                 cmdline.txt also to root=PARTUUID= AND make a 'dd' dump+backup of your mmc card
+                 in it's original state
+            
+            -also recommended to have serial access just in case ( will be needed for debugging/support )
+                
+            -fwiw my boot order is inverted to try usb first then mmc (0xf14)
+            
+            -any requests for support should state;
+               -did you use a factory/sysupgrade to install?
+               -what your cmdline.txt/partuuid was before and is now
+               -where the disk was plugged into before and is now
+               -console boot output and your (pi)firmware version
+
+
+
+
+    more detailed comments
+    ################################################ cmdline.txt restore caveat 2.7.23+
+
+    if you restore a backup from a different 'disk' (factory) you will need to
+    check / manually repair /boot/cmdline.txt root= prior to reboot if it is
+    set to PARTUUID or you will be using the new disk as alternate usb/mmc
+
+    short term I recommend not intermixing backups per disk
+    ( use a new and preferably different build for usb )
+
+    or if you never intend to use usb you can change the cmdline.txt back to
+    root=/dev/mmcblk0p2
+
+    vice versa if you are switching to usb you should update your root=PARTUUID
+    to that of the disk prior to unplugging / dd in this case you should only
+    have one instance of that disk plugged in at a time... 
+
+
+
+    ################################################ uuid(real) caveat
+
+    not yet writing new real UUID so you may need to do that if you
+    have config/fstab mounts and mmc + usb installs plugged
+    in at the same time
+
+
+
+
+
+    ######################## minimal-migration list
+
+
+
+#/boot/config.txt
+#edited /boot/cmdline.txt if you wish to support disk switching and are flashing a sysupgrade
+
+
+/etc/passwd
+/etc/shadow
+/etc/group
+/etc/uhttpd.crt
+/etc/uhttpd.key
+/etc/config/network
+/etc/config/dhcp
+/etc/config/sqm #adblock banip statistics etc
+/etc/config/system #optional
+/etc/config/fstab #optional
+/etc/dropbear/
+/root/.ssh
+/root/wrt.ini
+
+#/etc/packagesinstall.txt
+#/etc/packagesremove.txt
+#/etc/luciqrcodes.txt
+#/boot/plog/
+#/tmp/rrd
+#var nlwmon/
+#/etc/crontabs/root
+
+#/etc/inittab
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
