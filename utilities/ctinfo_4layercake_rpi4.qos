@@ -3127,7 +3127,7 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
 
 ######################################## HACKYVOIP-TMPFIX
 #RPI4QOS_VOIP_MACS="08:00:27:f8:7b:0c"
-CS_VOIP="CS6" #CS_VOIP="${CS_LATSENS:-CS6}"
+CS_VOIP="EF" #CS_VOIP="${CS_LATSENS:-CS6}"
 if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then
 
     for p in $RPI4QOS_VOIP_MACS ; do
