@@ -3,7 +3,7 @@
     ___________________________________________________   CHANGELOG
    
 
-      -2.7.39-30 -shutdown.sh handle rpi4.qos ipset save [wip]
+      -2.7.39-30 -shutdown.sh handle rpi4.qos ipset save [wip] (and ro rootfs checks wip)
                  -bootwait.sh more tweaks @ final result print and vars for report
                  -added custom stage2 to remove errors
                  -fwcustom handle multiwanifs quieter and promote core checks higher [wip-start]
@@ -415,6 +415,12 @@
     
     ################################## official-notes
  
+
+
+    r15794~ branch 21.02
+
+
+
 
     r15615* kernelbump 5.4.92 fpost re: high sirq@iperf
 

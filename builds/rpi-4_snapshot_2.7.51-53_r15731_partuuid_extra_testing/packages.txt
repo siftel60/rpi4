@@ -1,0 +1,493 @@
+#################################################################PKGMARKFULLEST
+##################### perl        
+perl
+perlbase-base
+perlbase-bytes
+perlbase-class
+perlbase-config
+perlbase-dynaloader
+perlbase-errno
+perlbase-essential
+perlbase-fcntl
+perlbase-filehandle
+perlbase-getopt
+perlbase-io
+perlbase-list
+perlbase-net
+perlbase-posix
+perlbase-scalar
+perlbase-selectsaver
+perlbase-socket
+perlbase-symbol
+perlbase-tie
+perlbase-time
+############## gitweb-deps note not adding git-web but deps likely handy #opkg git-gitweb
+perl-cgi
+perl-html-tagset
+perl-html-parser
+perl-try-tiny #
+perlbase-mime
+perlbase-re
+perlbase-unicore
+perlbase-utf8
+perlbase-encode
+perlbase-if
+perlbase-cwd
+perlbase-i18n
+perlbase-integer
+perlbase-locale
+perlbase-params
+perlbase-file
+perlbase-storable
+perlbase-digest
+perlbase-filetest
+################### end git-web-deps
+###########################
+php7
+php7-cgi
+php7-cli
+php7-mod-fileinfo
+php7-mod-iconv
+php7-mod-session
+php7-mod-sockets
+php7-mod-sysvmsg
+php7-mod-curl
+php7-mod-json
+################################################################################################## PKGMARKFULLER
+#################################################################
+# COMMUNITY LIST
+#################################################################
+lynx                ### console-http-txt-dump
+#############
+fping
+#############
+###
+chat
+###
+qmi-utils
+mbim-utils
+umbim
+########################
+simple-adblock
+luci-app-simple-adblock
+#######################
+kmod-iscsi-initiator
+open-iscsi
+### open-isns
+#######################
+###
+wipe
+###
+luci-proto-gre
+luci-proto-ipip
+### luci-app-dockerman ### dockerd docker0
+### luci-app-lxc #!pulls-in-tar possible config.txt restore bug
+debootstrap
+### gpgv #needed for bootstrap but breaks sysup@gzip opkg remove auc ucert-full
+debian-archive-keyring #20201121
+################
+ca-certificates
+################
+kmod-cryptodev
+kmod-crypto-rng
+rng-tools
+############## argon wants@2.3.73
+luasocket
+##########################################################
+### #trendy
+##########################################################
+mtr
+speedtest-netperf
+###
+kmod-scsi-core
+kmod-usb-ehci
+kmod-usb-ohci
+kmod-usb-storage
+kmod-usb-storage-extras
+kmod-usb-uhci
+kmod-usb2
+#############
+kmod-crypto-acompress
+kmod-crypto-aead
+kmod-crypto-authenc
+kmod-crypto-cbc
+kmod-crypto-ccm
+kmod-crypto-cmac
+kmod-crypto-crc32c
+kmod-crypto-ctr
+kmod-crypto-des
+kmod-crypto-gcm
+kmod-crypto-gf128
+kmod-crypto-ghash
+kmod-crypto-hash
+kmod-crypto-hmac
+kmod-crypto-manager
+kmod-crypto-md5
+kmod-crypto-null
+kmod-crypto-pcompress
+kmod-crypto-rng
+kmod-crypto-seqiv
+kmod-crypto-sha1
+kmod-crypto-sha256
+kmod-crypto-sha512
+kmod-crypto-user
+###
+ppp-mod-pppol2tp
+###ppp-mod-pppoe
+### iputils-ping
+iputils-arping
+px5g-standalone
+##########################################
+quagga
+quagga-libospf
+quagga-libzebra
+quagga-ospf6d
+quagga-ospfd
+quagga-vtysh
+quagga-watchquagga
+quagga-zebra
+################################3
+kmod-l2tp
+kmod-pppol2tp
+################################
+ip6tables-extra
+ip6tables-mod-nat
+kmod-ip6tables-extra
+kmod-ipt-nat6
+kmod-ipt-raw6
+kmod-nf-nat6
+kmod-l2tp
+kmod-pppol2tp
+### bind-dig
+### bind-host
+bind-check
+bind-dnssec
+bind-libs
+bind-nslookup
+bind-rndc
+bind-tools
+################
+darkstat
+################
+httping
+noping
+################################################################################################## PKGMARKMEDIUM
+################################################################################################## PKGMARKHALFFULL
+ucert-full #TESTINGTHIS forces certcheck
+####
+luci-app-wifischedule
+### iptgeoip #!!! pulls in gzip breaks sysupgrade opkg remove --force-depends gzip ##### added late 2020 dump xt nets perl
+################
+ip-bridge
+###
+luci-app-watchcat
+###
+modemmanager
+luci-proto-modemmanager
+###
+#########################################################################
+################
+luci-app-snmpd
+################
+kmod-ikconfig
+####################### outboundcerts? also useful for scripted tests?
+########### addrtype quota
+iptables-mod-extra
+########### hashlimit
+iptables-mod-hashlimit
+################### sqm-dscp-matching@advancedsqm
+kmod-loop
+kmod-dummy
+kmod-netem
+##################### debunpack
+ar
+##################### dht11ordecimaloperations
+bc
+##################### uart login
+agetty
+#####################
+pservice
+######################################################################################################## PKGMARKAVERAGE
+################################################################################################## PKGMARKNOTFULL
+################### findmnt andmountpoint
+mount-utils
+################### testthis<uhttp<ustream-ssl
+-libustream-wolfssl
+libustream-openssl
+######################
+resize2fs
+blockdev
+##################### see how they run... minimum one builtin nice
+##################### a little buggy with argon
+### luci-mod-dashboard #r14443 failstofind luci-lib-base
+##################### just in case for testing multiboot
+sfdisk
+gdisk
+#####################
+#####################
+kmod-usb-serial-qualcomm
+minicom
+################################## 2M
+zoneinfo-africa
+zoneinfo-asia
+zoneinfo-atlantic
+zoneinfo-core
+zoneinfo-europe
+zoneinfo-india
+zoneinfo-northamerica
+zoneinfo-pacific
+zoneinfo-poles
+zoneinfo-southamerica
+##################################
+watchcat
+nano
+##################################
+bind-dig
+bind-host
+##################################
+banip
+luci-app-banip
+##################################
+openssh-sftp-server
+##################################
+kmod-wireguard
+luci-app-wireguard
+luci-proto-wireguard
+wireguard
+wireguard-tools
+qrencode
+##################################
+6in4
+acme
+luci-app-acme
+ddns-scripts
+acme-dnsapi
+ddns-scripts-cloudflare ##### ddns-scripts_cloudflare.com-v4 #Thu Oct 15 14:13:21 AEDT 2020 ibopkgcannotdownload???
+luci-app-ddns
+##################################
+wwan
+usb-modeswitch
+uqmi
+luci-proto-qmi
+luci-proto-ncm
+kmod-usb-net-cdc-ether
+kmod-usb-net-cdc-mbim
+kmod-usb-net-cdc-ncm
+kmod-usb-net-huawei-cdc-ncm
+kmod-usb-net-qmi-wwan
+############################### 100mbusbether@github-chinmaythosar
+kmod-usb-net-sr9700
+kmod-usb-net-dm9601-ether
+###############################
+mwan3
+luci-app-mwan3
+###############################
+screen
+snmpd
+##################################
+tmux
+###############################
+dosfstools
+exfat-fsck
+exfat-mkfs
+kmod-fs-exfat
+kmod-fs-vfat
+##########################
+ntfs-3g
+ntfs-3g-utils
+########################## 20200902 antfs
+##################################
+https-dns-proxy
+luci-app-https-dns-proxy
+##################################
+#mc
+kmod-macvlan
+#################################################################
+# GENERAL LIST
+#################################################################
+###########################################
+dmesg
+##################### debugging nics 20200901 CLASS3
+ethtool
+####################################### Fri Aug 21 02:20:16 AEST 2020 replaced wpad-mini etc
+-wpad-basic-wolfssl
+#######################################
+zoneinfo-australia-nz
+##################################
+netperf
+################################## CLASS2
+hdparm
+coreutils-sleep                         #fractalsleep speed.sh
+##################################
+wget
+curl
+xz
+################################
+file
+patch
+blkid
+######################################
+dtc
+ccrypt
+######################################
+kmod-gpio-button-hotplug                #buttonsupport
+######################################
+kmod-leds-gpio                          ###+++
+kmod-ledtrig-transient
+### luci-app-ledtrig-usbport                #toggleledsbasedonusb-in        #NOT 19 or x86
+### luci-app-ledtrig-rssi                   #toggleledwifirssiqualityorbool #NOT 19 or x86
+######################################
+iptables-mod-geoip
+####################################### for total wan accounting
+iptables-mod-quota2
+######################################
+atftpd
+######################################
+collectd-mod-disk #20210129
+collectd-mod-dns
+collectd-mod-ping                               #2021@syntax
+collectd-mod-thermal
+collectd-mod-irq
+collectd-mod-conntrack
+collectd-mod-processes
+######################################
+conntrack
+######################################
+-wpad-basic
+#wpad
+wpa-cli
+wpad-openssl
+################################## for rpi4 wireless custom initcmds
+hostapd-utils
+#######################################
+kmod-usb-net-rtl8152                            #UE300 usb3 gigabit nic
+kmod-usb-net-asix-ax88179
+kmod-usb-net-pegasus                            #usb2 100M ethernet
+kmod-usb-net
+#######################################
+kmod-usb-net-cdc-ether                          #android-tethering
+kmod-usb-net-rndis                              #RNDIS-connections
+#######################################
+-dnsmasq
+dnsmasq-full
+#######################################
+ipset
+#######################################
+at
+#######################################
+bash
+htop
+lsof
+diffutils
+#######################################
+vim-fuller ###CLASS7
+### vim-full
+#######################################
+unzip
+unrar
+rsync
+block-mount
+jq
+#######################################
+usbutils
+pciutils                                    #lspci
+### hwinfo                                  #CLASS5>6 OFFTOSAVESPACE@hwinfo 881689 ~1m
+openssl-util
+#######################################
+nmap
+strace
+tcpdump
+#######################################
+iperf3
+iptraf-ng
+fdisk
+losetup
+######################################
+irqbalance
+#######################################
+### openssh-client                          #CLASS3>6 for cisco access 20111105 disable
+#######################################
+luci
+luci-theme-bootstrap
+luci-theme-material
+luci-theme-openwrt
+############################### uber slow @ debian stretch? https://forum.openwrt.org/t/ttyd-window-not-working-in-luci/76547/3
+########################################################### and ttydissue
+###luci-theme-openwrt-2020
+luci-app-commands
+luci-app-uhttpd
+luci-app-travelmate
+adblock
+luci-app-adblock
+#######################################
+banip
+luci-app-banip
+#######################################
+sqm-scripts
+sqm-scripts-extra
+luci-app-sqm
+#######################################
+nlbwmon
+luci-app-nlbwmon
+######################################
+kmod-tun
+openvpn-openssl
+luci-app-openvpn
+openvpn-easy-rsa
+vpn-policy-routing
+luci-app-vpn-policy-routing
+#######################################
+luci-app-wol
+######################################
+kmod-veth
+#######################################
+kmod-usb-serial-ftdi
+####################################### lvm/mapper libs etc a little too bulky
+#cryptsetup
+#######################################
+#kmod-usb-net-ipheth                             #AppleiPhoneUSBEthernetdriver
+#usbmuxd
+#libimobiledevice
+#######################################
+#################################################################
+# GENERAL LIST snapshot only
+#################################################################
+luci-app-ledtrig-usbport                #toggleledsbasedonusb #snapshot only
+luci-app-ledtrig-rssi                   #toggleledwifirssiqualityorbool #NOT 19 or x86
+################################################################################
+#Target: "brcm2708/bcm2711"
+#Device: rpi-4
+#######################################
+bcm27xx-userland
+kmod-sched-ctinfo
+#######################################
+-ip-tiny
+ip-full
+#######################################
+#######################################
+atftpd
+#######################################
+collectd-mod-thermal
+collectd-mod-irq
+collectd-mod-conntrack
+collectd-mod-entropy
+conntrack
+#######################################
+kmod-leds-gpio
+kmod-ledtrig-gpio
+kmod-ledtrig-oneshot
+kmod-ledtrig-transient
+#################@r15441BUILTIN
+### kmod-ledtrig-netdev
+### kmod-ledtrig-default-on
+### kmod-ledtrig-heartbeat
+### kmod-ledtrig-timer
+#######################################
+luci-app-statistics
+collectd-mod-network
+collectd-mod-exec
+collectd-mod-sqm
+######################################## OTG - pi as an ethernet device
+kmod-usb-dwc2
+kmod-usb-gadget-eth
+#add dtoverlay=dwc2 to /boot/config.txt

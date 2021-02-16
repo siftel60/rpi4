@@ -347,6 +347,44 @@ ingress() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 dynamicipset_setup() { #!NB: veth0? vs eth0?
 
 	local FN="dynamicipset_setup" #local sLBL="wasconsoles" #local sLBL="monuncommon"
@@ -581,6 +619,52 @@ PPP
 #########-N logdscp -m limit || CONNMARKS etc.
 #########  -m multiport ! --ports 1900
 ###############################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -874,10 +958,14 @@ ipset=/xbox-mbr.xboxlive.com/gamecache4,gamecache6
 ipset=/assets1.xboxlive.com.nsatc.net/gamecache4,gamecache6
 ipset=/xvcf1.xboxlive.com/gamecache4,gamecache6
 ######################################################################################################################
+############ playstore
+ipset=/gvt1.com/gvt2.com/android.clients.google.com/clients1.google.com/clients2.google.com/clients3.google.com/clients4.google.com/clients5.google.com/clients6.google.com/play.googleapis.com/bulk,bulk6
 EOF
 
 #ipset=/wikipedia.com/wikipedia.org/wiki,wiki6
 #ipset=/*.fastly.net/bulk,bulk6
+
+
 
 }
 
@@ -2004,10 +2092,8 @@ fi
 
 
 MNAME="rpi4.qos" #MNAME="ctinfo_4layercake_rpi4.qos"
+
 PACKAGES="ipset dnsmasq-full iptables-mod-extra iptables-mod-conntrack-extra iptables-mod-hashlimit iptables-mod-ipopt kmod-sched-ctinfo iptables-mod-conntrack-extra"
-
-
-
 if ! prereqCHECKA ${PACKAGES}; then exit 0; fi #if [ ! -f "$FFmP" ]; then #@@@start? #fi #iptables-mod-geoip
 
 
@@ -2023,9 +2109,6 @@ fi
 
 
 
-
-
-
 eval `grep '^RPI4QOS_LOGGER=' /root/wrt.ini 2>/dev/null`
 if [ ! -z "$RPI4QOS_LOGGER" ]; then #@echL-CURRENTLYOFF@log
     INIMSGoptsON="${INIMSGoptsON} RPI4QOS_LOGGER"
@@ -2034,14 +2117,9 @@ else
 fi
 
 
-
-
-
-
-
 eval `grep '^RPI4QOS_RECLASSIFY_SH=' /root/wrt.ini 2>/dev/null`
 if [ ! -z "$RPI4QOS_RECLASSIFY_SH" ]; then #@echL-CURRENTLYOFF@log
-    if [ -f "$RPI4QOS_RECLASSIFY_SH" ]; then
+    if [ -f "$RPI4QOS_RECLASSIFY_SH" ]; then #@@@WARNifNOTinSYSUPGRADE.conf
         : #echL "RPI4QOS_RECLASSIFY_SH=\"$RPI4QOS_RECLASSIFY_SH\" [ok]"
     else
         echL "RPI4QOS_RECLASSIFY_SH=\"$RPI4QOS_RECLASSIFY_SH\" [no-file]"
@@ -2050,6 +2128,20 @@ if [ ! -z "$RPI4QOS_RECLASSIFY_SH" ]; then #@echL-CURRENTLYOFF@log
     #else
 fi
 #NOTE: movetostart/stop && handle errors
+
+
+
+
+
+
+
+######### GAMINGPARAMS
+eval `grep '^RPI4QOS_VOIP_MACS=' /root/wrt.ini 2>/dev/null`
+if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then
+    INIMSGvoipON="${INIMSGgameON} RPI4QOS_VOIP_MACS"
+else
+    INIMSGvoipOFF="${INIMSGgameFF} RPI4QOS_VOIP_MACS"
+fi
 
 
 
@@ -2071,6 +2163,16 @@ else
     #INIMSGoff="${INIMSGoff} RPI4QOS_GAMING_MACS"
 fi
 
+
+
+
+
+
+
+
+
+
+
 eval `grep '^RPI4QOS_GAMING_LEARNCONNECTIONS=' /root/wrt.ini 2>/dev/null`
 if [ ! -z "$RPI4QOS_GAMING_LEARNCONNECTIONS" ]; then
     DSCPMONLEARNCONNECTIONS=1
@@ -2079,6 +2181,9 @@ else
     #INIMSGoff="${INIMSGoff} RPI4QOS_GAMING_LEARNCONNECTIONS"
     INIMSGgameOFF="${INIMSGgameOFF} RPI4QOS_GAMING_LEARNCONNECTIONS"
 fi
+
+
+
 
 
 
@@ -2106,9 +2211,8 @@ fi #DSCPMONIPS_6="10.2.3.220"
 
 
 
+
 #@@@@@@@case "${IPSETsaveMETHOD:-append}" in
-
-
 
 eval `grep '^IPSET_BACKUPd=' /root/wrt.ini 2>/dev/null`
 IPSET_BACKUPd="${IPSET_BACKUPd:-"/etc/custom/firewall/dscp/backup"}" #NOTE: bypassed fallback to tmp below
@@ -2187,6 +2291,8 @@ RPI4QOS_IPSET_RESTORE_excl="sony4 sqmdscp_ yoyo firehol debl bogon darklist drop
 
 
 
+
+
 case "$0" in
     /usr/lib/sqm/start-sqm) IS_SQMCALL="start"; ;;
     /usr/lib/sqm/stop-sqm) IS_SQMCALL="stop"; ;;
@@ -2199,18 +2305,7 @@ esac #echo "RPI4QOS-CONS-CALL-STOP> $0 ${*} $(cat /proc/$PPID/cmdline)" > /dev/c
 
 
 
-
-
-
-
-
-
-
-
-
 echL "################################################## $IS_SQMCALL"
-
-
 case "$IS_SQMCALL" in
 
     stop) #set > /tmp/CAKE-set-stop
@@ -2221,7 +2316,6 @@ case "$IS_SQMCALL" in
                 echL "       IPSET_SAVEexcl: $RPI4QOS_IPSET_SAVE_excl"
             fi
         fi #if [ ! -z "$RPI4QOS_IPSET_SAVE_excl" ] && [ ! -z "$RPI4QOS_IPSETPERSIST" ]; then
-
 
 
         #if [ ! -z "$RPI4QOS_IPSETPERSIST" ]; then #@ADD-SEPERATE-SAVE-ALSO-BELOW-NEEDSandAPPENDvsOVERWRITEoption
@@ -2287,16 +2381,9 @@ CCC
 
 
 
-
-
-
-
-
 #################################NOTEGOESINSETUPAFTERINITIALSETCREATEorSIMILAR #set > /tmp/CAKE-set-start
 
     start)
-
-
 
 #IPSET_
 if [ ! -z "$INIMSG" ]; then #WASnowblankishORtbaGENERAL/derived
@@ -2307,17 +2394,9 @@ if [ ! -z "$INIMSGoff" ]; then #forGAMINGoffWASnowblankishORtbaGENERAL/derived
 fi
 
 
-
-#if [ ! -z "$RPI4QOS_IPSET_SAVE_excl" ]; then
-
-
 if [ ! -z "$RPI4QOS_IPSET_RESTORE_excl" ] && [ ! -z "$RPI4QOS_IPSETPERSIST" ]; then
     echL "    IPSET_RESTOREexcl: $RPI4QOS_IPSET_RESTORE_excl"
-fi
-
-
-
-
+fi #@stop if [ ! -z "$RPI4QOS_IPSET_SAVE_excl" ]; then
 
 
 
@@ -2335,15 +2414,20 @@ fi
 
 
 
-        CSINIT #PARKHERE_MAYBEMOVEBACKTOEACHFUNTIONorADD_PARAMS
 
 
-        if [ ! -z "$RPI4QOS_IPSETPERSIST" ]; then
-            echL "        IPSET_BACKUPd: [on:$IPSET_BACKUPd]"
-            #if [ ! -z "$RPI4QOS_IPSET_SAVE_excl" ]; then
-            #fi
-            sleep ${RCSLEEP:-0}
-        fi #if [ ! -z "$RPI4QOS_IPSET_SAVE_excl" ] && [ ! -z "$RPI4QOS_IPSETPERSIST" ]; then
+CSINIT #PARKHERE_MAYBEMOVEBACKTOEACHFUNTIONorADD_PARAMS
+
+
+
+
+if [ ! -z "$RPI4QOS_IPSETPERSIST" ]; then
+        echL "        IPSET_BACKUPd: [on:$IPSET_BACKUPd]"
+        sleep ${RCSLEEP:-0}
+fi #if [ ! -z "$RPI4QOS_IPSET_SAVE_excl" ] && [ ! -z "$RPI4QOS_IPSETPERSIST" ]; then
+#if [ ! -z "$RPI4QOS_IPSET_SAVE_excl" ]; then #fi
+
+
 
 
 #if [ ! -z "$RPI4QOS_IPSETPERSIST" ] || [ ! -z "$RPI4QOS_IPSETRESTORE" ]; then #@names or all
@@ -2415,12 +2499,9 @@ sleep ${RCSLEEP:-0}
 ipt_setup() {
 
 
-    # Configure iptables chains to mark packets
-    #    ipt_destruct
 
-
-
-
+    
+    # Configure iptables chains to mark packets #    ipt_destruct #MOVEDTOBOTTOMFUNC
     ipt -t mangle -N QOS_CAKE_${IFACE}
     ipt -t mangle -N QOS_MARK_F_${IFACE}
     ipt -t mangle -N QOS_MARK_F_REMAP_${IFACE}
@@ -2429,52 +2510,25 @@ ipt_setup() {
     ipt -t mangle -N QOS_MARK_D_repl_${IFACE}
 
 
+    ########### pre-setup>setup
+    if [ ! -f /etc/config/.dhcp-pre-qos ]; then cp /etc/config/dhcp /etc/config/.dhcp-pre-qos; fi #@qosdebug.sh 'restore'
+    dumpdebugscript #@+ipt-namelist-var
+    write_rtdsfield
 
 
 
 
-
-
-
-
-
-########### pre-setup>setup
-if [ ! -f /etc/config/.dhcp-pre-qos ]; then cp /etc/config/dhcp /etc/config/.dhcp-pre-qos; fi #@qosdebug.sh 'restore'
-dumpdebugscript #@+ipt-namelist-var
-write_rtdsfield
-
-
-
-
-
-
-echL "IFACE:$IFACE $IS_SQMCALL SUBNET:$SUBNET PREFIX:$PREFIX ${ifc_wan6}"
-#echL "ip4>SUBNET:$SUBNET ip6> ifc_wan6:${ifc_wan6} PREFIX:$PREFIX" debug
-
-if [ -n "$RPI4QOS_VERBOSE" ]; then
-
-#echL "################################## INGRESS"
-echL "IGNORE_DSCP_INGRESS:$IGNORE_DSCP_INGRESS ZERO_DSCP_INGRESS:$ZERO_DSCP_INGRESS"
-echL "INGRESS_CAKE_OPTS:$INGRESS_CAKE_OPTS IQDISC_OPTS:$IQDISC_OPTS"
-echL "EGRESS_CAKE_OPTS:$EGRESS_CAKE_OPTS EQDISC_OPTS:$EQDISC_OPTS"
-############################echL "INGRESS_CAKE_OPTS:$INGRESS_CAKE_OPTS EGRESS_CAKE_OPTS:$EGRESS_CAKE_OPTS"
-
-echL "SHAPER_BURST_DUR_US:$SHAPER_BURST_DUR_US SHAPER_QUANTUM_DUR_US:$SHAPER_QUANTUM_DUR_US" debug
-echL "THRESH CONNBDN:$CONNBDN CONNBUP:$CONNBUP" debug
-
-
-fi #ENDVERBOSEHEADER
-
-
-
-
-
-
-
-
-
-
-
+    echL "IFACE:$IFACE $IS_SQMCALL SUBNET:$SUBNET PREFIX:$PREFIX ${ifc_wan6}"
+    #echL "ip4>SUBNET:$SUBNET ip6> ifc_wan6:${ifc_wan6} PREFIX:$PREFIX" debug
+    if [ -n "$RPI4QOS_VERBOSE" ]; then
+        #echL "################################## INGRESS"
+        echL "IGNORE_DSCP_INGRESS:$IGNORE_DSCP_INGRESS ZERO_DSCP_INGRESS:$ZERO_DSCP_INGRESS"
+        echL "INGRESS_CAKE_OPTS:$INGRESS_CAKE_OPTS IQDISC_OPTS:$IQDISC_OPTS"
+        echL "EGRESS_CAKE_OPTS:$EGRESS_CAKE_OPTS EQDISC_OPTS:$EQDISC_OPTS"
+        ############################echL "INGRESS_CAKE_OPTS:$INGRESS_CAKE_OPTS EGRESS_CAKE_OPTS:$EGRESS_CAKE_OPTS"
+        echL "SHAPER_BURST_DUR_US:$SHAPER_BURST_DUR_US SHAPER_QUANTUM_DUR_US:$SHAPER_QUANTUM_DUR_US" debug
+        echL "THRESH CONNBDN:$CONNBDN CONNBUP:$CONNBUP" debug
+    fi #ENDVERBOSEHEADER
 
 
 
@@ -2496,6 +2550,8 @@ fi #ENDVERBOSEHEADER
 
 
 
+
+
 #@?add'check/setup'+call=flush-sep ### dumpdebugscript #mayneediptnames-moveupandfailfriendly
 
 
@@ -2509,38 +2565,16 @@ fi #ENDVERBOSEHEADER
 
 
 
-
-
-
-
 #########################################originalimportedvars-nowused@populatedvia-iniAKAindirectly-nousermoddingneeded
 #sLBL="monuncommon"; DSCPMONIPS_4="10.2.3.220"; DSCPMONIPS_6="10.2.3.220"; DSCPMONLEARNCONNECTIONS=1; DSCPMONMACS="aa:bb"
 ######################################################################################################################
-sLBL="gamingdevice" #sets consoles4+6existorexit CAREFULLITSSTATICINFUNCTIONtmp
-#?DSCPMONTRAFIGNOREPORTSdT="443"
-#?DSCP_PORTs4_TCP_CS0=""
 
 
+sLBL="gamingdevice" #sets consoles4+6existorexitCAREFULLITSSTATICINFUNCTIONtmp#?DSCPMONTRAFIGNOREPORTSdT="443"
+                                                                                        #?DSCP_PORTs4_TCP_CS0=""
 dynamicipset_setup "flush" #this-if-for-re-runs->possiblyputinteardown-deinit-etc #@@@if? ONLYHANDLING-'GAMING'
 
-
 #-USECSMOD@ethtool
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2626,7 +2660,6 @@ ipset -q add cloudflare cloudflare-v6
 
 
 
-
 ###################################################3################################# nethash-sample-v4
 ###########3twentyfourthousandrecords@ipset create sony4 -exist hash:ip hashsize 32768 maxelem 80000
 SONYIPv4="63.241.6.48/29
@@ -2640,7 +2673,6 @@ ipset create sony4 -exist nethash hashsize 32768 maxelem 80000
 for p in $SONYIPv4 ; do
 	ipset -exist add sony4 $p
 done
-
 
 
 ###################################################3################################# steam-v4-inline
@@ -2709,14 +2741,9 @@ done
 
 
 
-
 ipsets_into_ucidnsmasq #ipsetsintoucidnsmasqdirecttest          #ADDS-IPSETS-to-ETC_CONFIG_DHCPandRESTARTS_DNSMASQIFNEEDED
 
-dynamicipset_setup #topaddconsoledynamicipsetstraf              #ADDS FIREWALL RULES RELATED TO 'GAMING-MAC-LEARNING-IPSETS-ETC'@if?
-
-
-
-
+dynamicipset_setup #topaddconsoledynamicipsetstraf              #ADDS-FIREWALLRULES-RELATEDTO'GAMING-MAC-LEARNING-IPSETS-ETC'@if?
 
 
 
@@ -2734,16 +2761,7 @@ ipset -L -n | while read PP; do #moverestorehere-prints-numrecords-livesets
 done #ipset_do report cloudfare-v6
 
 
-
-
-
-
-
 fi #END_VERBOSE_PRINTSETCOUNTS
-
-
-
-
 
 
 
@@ -2790,13 +2808,9 @@ DOWNRATE=${DOWNLINK}
 
 
 
-
-
-
-
-
-
 #@start) CSINIT #PARKHERE_MAYBEMOVEBACKTOEACHFUNTIONorADD_PARAMS #CS_DEFINES_MOVEDOUTSIDE_FUNCTION
+
+
 
 
 
@@ -2819,8 +2833,6 @@ ipt  -t mangle -A QOS_MARK_F_${IFACE} -m dscp ! --dscp 0x00 -g QOS_MARK_F_REMAP_
 ###!!!NOTE: -A vs -I
 #@@@CS2+conbytesover?ipt  -t mangle -A QOS_MARK_F_REMAP_${IFACE} -m dscp --dscp 0x01 -p tcp -s waldorf -j DSCP --set-dscp-class CS1
 ########################################################################### TESTINGTHIS 18=streaming
-
-
 
 
 
@@ -2854,9 +2866,6 @@ IPTBOTH -t mangle -A QOS_MARK_F_${IFACE} -p tcp -m tcp -m multiport \
 IPTBOTH -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp \
     --sport 6981 -j DSCP --set-dscp 1 \
     -m comment --comment "TORRENT-LE-udp" 
-
-
-
 
 
 
@@ -2904,6 +2913,7 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set ${sLBL}6 src -j D
 
 
 
+
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set \
     --match-set gamecache4 src -j DSCP --set-dscp-class ${CS_GAMING:-CS3} \
     -m comment --comment "GAMECACHE4src-${CS_GAMING:-CS3}"
@@ -2920,7 +2930,6 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set \
 
 
 
-
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set cloudflare-v4 src -j DSCP \
     --set-dscp-class $CS_CDN -m comment --comment "CLOUDFL4src-$CS_CDN"
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set cloudflare-v4 dst -j DSCP \
@@ -2929,6 +2938,7 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set cloudflare-v6 src
     --set-dscp-class $CS_CDN -m comment --comment "CLOUDFL6src-$CS_CDN"
 $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set cloudflare-v6 dst -j DSCP \
     --set-dscp-class $CS_CDN -m comment --comment "CLOUDFL6dst-$CS_CDN"
+
 
 
 
@@ -3017,12 +3027,14 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m set --match-set bulk6 dst 
 
 
 
-####################################################### Apple
+
+##################### Apple #5223 appleAPN cod/ps3 samsumg jabber MOSTLY TCPDPORT hpneverwinter udp
 $IPTABLES -t mangle -A QOS_MARK_F_${IFACE} -p tcp -d 17.0.0.0/8 -m tcp -m multiport \
     --dports 5223,993 -m comment --comment "APPLEMAIL-CS0-BE" -j CONNMARK --set-xmark 0x01000000/0x01000000
-#TESTING-REMOVED-IPSECTION!!!
-$IP6TABLES -t mangle -A QOS_MARK_F_${IFACE} -p tcp -m tcp -m multiport \
-    --dports 5223,993 -m comment --comment "APPLEMAIL6TEST-noIPMATCH" -j CONNMARK --set-xmark 0x01000000/0x01000000
+#TESTED-REMOVED-IPSECTIONnotneeded  ############### ALREADY RULE ABOVE
+#ipt -t mangle -A QOS_MARK_F_${IFACE} -p tcp -m tcp -m multiport --dports 5223 \
+#    -m comment --comment "5223appleAPN-D-TCP-${CS_VID:-CS3}" -j DSCP --set-dscp-class ${CS_VID:-CS3}
+
 
 
 
@@ -3032,6 +3044,15 @@ $IP6TABLES -t mangle -A QOS_MARK_F_${IFACE} -p tcp -m tcp -m multiport \
 
 
 
+
+
+
+
+
+
+
+
+###############################Zoom - connections go to Zoom with dest ports 8801-8810
 
 
 #Facetime is interesting. Apple say that for firewall purposes only certain ports are used, they don't say if that's source
@@ -3071,7 +3092,6 @@ ipt -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp -m multiport --sports 51820 -
 
 
 
-
 #####################CS_ICMP="${CS_ICMP:-"AF33"}" #CS0BE AF33 EF #CS_ICMP2="EF" #onlyherefornow>phasetwo
 #    CONTROL ICMP(2)
 #####################Icmp/v6 1.0 ORG-LOCKINCS0@CONNMARK0x10000000 1.1 #1-CS5#2EF#3AF31#3.1EF
@@ -3086,11 +3106,11 @@ $IP6TABLES -t mangle -A QOS_MARK_F_${IFACE} -p icmpv6 -j DSCP \
 
 
 
-####################################TEST-REMOVEME MOVEDABOVE@I
-$IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
-    --ports 53,5353,123,546,547 -j CONNMARK --set-xmark 0x01000000/0x01000000
-$IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
-    --ports 53,5353,123,546,547 -j CONNMARK --set-xmark 0x01000000/0x01000000
+####################################TEST-REMOVEME MOVEDABOVE@I ATBOTTOM?
+#$IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
+#    --ports 53,5353,123,546,547 -j CONNMARK --set-xmark 0x01000000/0x01000000
+#$IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
+#    --ports 53,5353,123,546,547 -j CONNMARK --set-xmark 0x01000000/0x01000000
 ####################################TEST-REMOVEME MOVEDABOVE@I
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
     --ports 53,5353,123,67,68 -j DSCP \
@@ -3098,6 +3118,39 @@ $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
 $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
     --ports 53,5353,123,546,547 -j DSCP \
     --set-dscp-class ${CS_CONTROL2} -m comment --comment "DNS6-NTP6-UDP-${CS_CONTROL2}"
+
+
+
+
+
+
+
+######################################## HACKYVOIP-TMPFIX
+#RPI4QOS_VOIP_MACS="08:00:27:f8:7b:0c"
+CS_VOIP="CS6" #CS_VOIP="${CS_LATSENS:-CS6}"
+if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then
+
+    for p in $RPI4QOS_VOIP_MACS ; do
+        
+        echL "voip mac tmp EF: $p $CS_VOIP"    
+
+        $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} \
+            -m mac --mac-source ${p} \
+            -j DSCP --set-dscp-class ${CS_CONTROL2} \
+            -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
+
+        $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} \
+            -m mac --mac-source ${p} \
+            -j DSCP --set-dscp-class ${CS_CONTROL2} \
+            -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
+
+    done
+
+fi
+
+#ip6tables -t mangle -D PREROUTING -m conntrack --ctstate NEW \
+#                    -m mac --mac-source ${cMAC} -j SET --add-set ${sLBL} src --exist 2>/dev/null
+
 
 
 
@@ -3115,7 +3168,6 @@ ipt -t mangle -A QOS_MARK_F_${IFACE} -j CONNMARK --set-dscpmark 0xfc000000/0x020
 ####################### if we stored a non best effort DSCP then lock it in place, there's no traffic based deprioritisation required
 ipt -t mangle -A QOS_MARK_F_${IFACE} -m connmark ! --mark 0x0/0xfc000000 -j CONNMARK --set-xmark 0x01000000/0x01000000
 # ---- End of 'hard/fixed' rules
-
 
 
 
@@ -3141,21 +3193,12 @@ ipt -t mangle -A QOS_MARK_D_${IFACE} -j CONNMARK --set-xmark 0x21000000/0x210000
 
 
 
-
-
-################# # It all starts here
-################# # It all starts here
 ################# # It all starts here
 # CAKE chain to combine hard/dynamic rules
 #########################################
 ################# # It all starts here
 ################# Send unmarked connections to the hard/fixed marking chain
 ipt -t mangle -A QOS_CAKE_${IFACE} -m connmark --mark 0x00000000/0x02000000 -g QOS_MARK_F_${IFACE}
-
-
-
-
-
 
 
 ###################### V4 # Send marked connections over CONNB bytes and not DSCPFixed to the dynamic rules
@@ -3230,9 +3273,6 @@ ipt -t mangle -A POSTROUTING -o ${IFACE} -m connmark --mark 0x00000000/0x0100000
 
 
 
-
-
-
 ipt_destruct() {
 
 
@@ -3253,15 +3293,15 @@ ipt_destruct() {
 
 
 
+
     #TESTINGTHIS-tagstatixdoubleentries
+    DSCPstaticCHAIN="dscptagstatic"
     iptables -t mangle -F ${DSCPstaticCHAIN} 2>/dev/null
     #iptables -t mangle -X ${DSCPstaticCHAIN} 2>/dev/null
     ip6tables -t mangle -F ${DSCPstaticCHAIN} 2>/dev/null
     #ip6tables -t mangle -X ${DSCPstaticCHAIN} 2>/dev/null
 
 }
-
-
 
 
 
@@ -3283,35 +3323,36 @@ ipt6dscp() {
 
 
 
+
+
+
 setuptagstatic() { #NOTE @ FUNCTIONSABOVE destruct and loadthisfunc not really needed
 
 
 ######################
+WASHDSCPUP="yes"; WASHDSCPDOWN="yes"
 ######################
-WASHDSCPUP="yes"
-WASHDSCPDOWN="yes"
-######################
-UPRATE=$UPLINK
-DOWNRATE=${DOWNLINK}
-###
+UPRATE="${UPLINK}"
+DOWNRATE="${DOWNLINK}"
+
+
 WAN="$IFACE" #MODDED
 ######################
 DSCPstaticCHAIN="dscptagstatic"
-CPF="STATIX" #comment-prefix
+local CPF="STATIX" #comment-prefix
+local CPf="statix" #comment-prefix
 
 
 
 
 #CSINIT &>/dev/null #######################@startNONEED  #!> ackrate statistical removed
-
-
-
 #######################################################
 iptables -t mangle -N ${DSCPstaticCHAIN} 2>/dev/null
 iptables -t mangle -F ${DSCPstaticCHAIN} 2>/dev/null
 ip6tables -t mangle -N ${DSCPstaticCHAIN} 2>/dev/null
 ip6tables -t mangle -F ${DSCPstaticCHAIN} 2>/dev/null
 #######################################################
+
 
 
 
@@ -3332,8 +3373,7 @@ ipt64dscp -p tcp -m multiport --dports "$TCPBULKPT" -j DSCP \
 
 
 #######################<<<>>>###
-# VIDINT
-CS_VIDINT="${CS_VIDINT:-CS4}"
+CS_VIDINT="${CS_VIDINT:-CS4}" # VIDINT
 #######################<<<>>>###
 ########## boost jitsi meet udp to CS4 if bandwidthvideoconf CS5 makerealtime caninterfere-w-oth-realtime/game CS4~enough
 ipt64dscp -p udp --dport 10000 -j DSCP --set-dscp-class ${CS_VIDINT} -m comment --comment "$CPF-jitsi-dUDP-${CS_VIDINT}"
@@ -3372,8 +3412,6 @@ ipt64dscp -p tcp --sport 5938 -j DSCP --set-dscp-class ${CS_VIDINT} -m comment -
 
 
 
-
-
 #######################<<<>>>###
 # CONTROL
 #######################<<<>>>###
@@ -3395,8 +3433,6 @@ ipt6dscp -p icmpv6 -m dscp --dscp 0x00 -j DSCP --set-dscp-class EF -m comment --
 #######################<<<>>>###
 # CONTROL END
 #######################<<<>>>###
-
-
 
 
 
@@ -3489,6 +3525,7 @@ for ipproto in 4 6 ; do
 done
 
 
+
 CS_HTTP1=CS5
 CS_HTTP2=AF23
 ipt4dscp -p tcp -m tcp --dport 443 -m dscp --dscp 0x00 -m hashlimit \
@@ -3505,12 +3542,17 @@ ipt6dscp -p tcp -m tcp --dport 443 -m dscp --dscp 0x00 -m hashlimit \
 
 
 #TMPON@chunky
+#TMPON@chunky
+#TMPON@chunky
 ipt4dscp -p tcp -m tcp --dport 443 -m dscp --dscp 0x00 \
     -j DSCP --set-dscp-class $CS_HTTP2 \
     -m comment --comment "$CPF-HTTPS4-00default-$CS_HTTP2"
 ipt6dscp -p tcp -m tcp --dport 443 -m dscp --dscp 0x00 \
     -j DSCP --set-dscp-class $CS_HTTP2 \
     -m comment --comment "$CPF-HTTPS6-00default-$CS_HTTP2"
+#TMPON@chunky
+#TMPON@chunky
+#TMPON@chunky
 
 
 
@@ -3529,15 +3571,11 @@ sqm_prepare_script() {
 
     
     if [ ! -z "$RPI4QOS_RECLASSIFY_SH" ]; then
-        echL "running reclassify: $RPI4QOS_RECLASSIFY_SH"
-        #sh "$RPI4QOS_RECLASSIFY_SH" run 2>/dev/null #@somevarissue
-        #sh "$RPI4QOS_RECLASSIFY_SH" run
+        echL "running reclassify: $RPI4QOS_RECLASSIFY_SH $IS_SQMCALL"
         sh "$RPI4QOS_RECLASSIFY_SH" $IS_SQMCALL
-    fi
+    fi #2>/dev/null
 
 }
-
-
 
 
 
@@ -3592,12 +3630,6 @@ sqm_prepare_script() {
 #curl -L https://raw.githubusercontent.com/ldir-EDB0/sqm-scripts/exp/src/ctinfo_4layercake.qos > /usr/lib/sqm/ctinfo_4layercake.qos
 
 
-
-
-
-
-
-#-m comment --comment "$CPF-LANWEB-Ts-$CS_LANINT"
 
 
 #THEBASEBITS
