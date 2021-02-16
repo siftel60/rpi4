@@ -3132,21 +3132,22 @@ if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then
 
     for p in $RPI4QOS_VOIP_MACS ; do
         
-        echL "voip mac tmp EF: $p $CS_VOIP"    
+        echL "voip-mac-tmp-workaround: $p $CS_VOIP"    
 
         $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} \
             -m mac --mac-source ${p} \
-            -j DSCP --set-dscp-class ${CS_CONTROL2} \
+            -j DSCP --set-dscp-class ${CS_VOIP} \
             -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
 
         $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} \
             -m mac --mac-source ${p} \
-            -j DSCP --set-dscp-class ${CS_CONTROL2} \
+            -j DSCP --set-dscp-class ${CS_VOIP} \
             -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
 
     done
 
 fi
+
 
 #ip6tables -t mangle -D PREROUTING -m conntrack --ctstate NEW \
 #                    -m mac --mac-source ${cMAC} -j SET --add-set ${sLBL} src --exist 2>/dev/null
