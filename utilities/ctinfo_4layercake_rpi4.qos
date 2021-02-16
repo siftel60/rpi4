@@ -672,6 +672,219 @@ PPP
 
 
 
+dynamicipset_setup_voip() {
+
+
+
+
+    ######################################## HACKYVOIP-TMPFIX
+    CS_VOIP="EF" #CS_VOIP="${CS_LATSENS:-CS6}"
+
+
+	local FN="dynamicipset_setup_voip"
+    local sLBL="voipdevices"
+	#echL "$FN> populate $sLBL*traf ipsets LEARNCONNECTIONS:${DSCPMONLEARNCONNECTIONS:-off}"; sleep ${RCSLEEP:-0}
+
+
+    #if [ -z "$RPI4QOS_VOIP_MACS" ]; then
+    #fi
+
+
+
+
+
+
+    if [ "$1" = "flush" ]; then
+
+        iptables -D FORWARD -m set --match-set ${sLBL}4 dst -j SET \
+            --add-set ${sLBL}4traf src,src --exist 2>/dev/null
+        ip6tables -D FORWARD -m set --match-set ${sLBL}6 dst -j SET \
+            --add-set ${sLBL}6traf src,src --exist 2>/dev/null
+
+
+        while read THIS RULE; do
+            [ -z "$RULE" ] && continue
+            [ -n "$DEBUG" ] && echL "iptables -t mangle -D $RULE"
+            iptables -t mangle -D $RULE
+        done <<PPP
+$(iptables-save  | grep mac-source | grep add-set | grep "$sLBL")
+PPP
+
+        while read THIS RULE; do
+            [ -z "$RULE" ] && continue
+            [ -n "$DEBUG" ] && echL "ip6tables -t mangle -D $RULE"
+            ip6tables -t mangle -D $RULE
+        done <<PPP
+$(ip6tables-save  | grep mac-source | grep add-set | grep "$sLBL")
+PPP
+
+
+
+        #echL "ipset flush ${sLBL}4" #ipset flush "${sLBL}4" 2>/dev/null
+        ipset_do "flush" "${sLBL}4" 2>/dev/null
+        
+        #echL "ipset flush ${sLBL}6" #ipset flush "${sLBL}6" 2>/dev/null
+        ipset_do "flush" "${sLBL}6"
+
+        return 0
+
+    fi
+    ###############################################################################
+
+
+
+
+
+	################ THESE HOLD IPS WHICH ARE DYNAMICALLY OR STATICALLY ENTERED then are used to jump to MONdoCHAIN||action
+	
+    if ! ipset -n list | grep -q "^${sLBL}"; then
+		echL "Creating-ipsets: ${sLBL}" msg
+		ipset create ${sLBL} list:set 2>/dev/null
+    fi
+
+	if ! ipset -n list | grep -q "^${sLBL}4$"; then
+		echL "Creating-ipsets: ${sLBL}4 ${sLBL}" msg #echo "${sLBL}4 [missing]"; #ISSUES="${ISSUES} ${sLBL}4 missing"
+		ipset create ${sLBL}4 hash:ip family inet 2>/dev/null
+		ipset create ${sLBL} list:set 2>/dev/null
+		ipset add ${sLBL} ${sLBL}4 2>/dev/null
+
+	fi
+
+	if ! ipset -n list | grep -q "^${sLBL}6$"; then
+		echL "Creating-ipsets: ${sLBL}6 ${sLBL}" msg #echo "${sLBL}6 [missing]"; #ISSUES="${ISSUES} ${sLBL}4 missing"
+		ipset create ${sLBL}6 hash:ip family inet6 2>/dev/null
+		ipset create ${sLBL} list:set 2>/dev/null
+		ipset add ${sLBL} ${sLBL}6 2>/dev/null
+	fi
+
+
+	if [ ! -z "$ISSUES" ]; then echo "$FN> ISSUES: $ISSUES" && exit 0; fi
+
+
+
+
+    ############################################ NOW ADD SOME RULES to populate above set or STATIC set entries
+	if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then
+        for cMAC in $RPI4QOS_VOIP_MACS ; do
+            echL "${sLBL}mac: $(echo $cMAC | cut -c1-11) [learn-ips]"
+            
+        echL "voip-mac-tmp-workaround: $cMAC $CS_VOIP"    
+        
+        #$IPTABLES -t mangle -I QOS_MARK_F_${IFACE} \
+        #    -m mac --mac-source ${cMAC} \
+        #    -j DSCP --set-dscp-class ${CS_VOIP} \
+        #    -m comment --comment "VOIPMAC-$cMAC-${CS_VOIP}"
+        #$IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} \
+        #    -m mac --mac-source ${cMAC} \
+        #    -j DSCP --set-dscp-class ${CS_VOIP} \
+        #    -m comment --comment "VOIPMAC-$cMAC-${CS_VOIP}"
+
+			iptables -t mangle -D PREROUTING -m conntrack --ctstate NEW \
+				-m mac --mac-source ${cMAC} -j SET --add-set ${sLBL} src --exist 2>/dev/null
+			iptables -t mangle -I PREROUTING -m conntrack --ctstate NEW \
+				-m mac --mac-source ${cMAC} -j SET --add-set ${sLBL} src --exist
+
+			ip6tables -t mangle -D PREROUTING -m conntrack --ctstate NEW \
+				-m mac --mac-source ${cMAC} -j SET --add-set ${sLBL} src --exist 2>/dev/null
+			ip6tables -t mangle -I PREROUTING -m conntrack --ctstate NEW \
+				-m mac --mac-source ${cMAC} -j SET --add-set ${sLBL} src --exist
+
+		done
+
+	else
+		[ -n "$DEBUG" ] && echL "${sLBL}mac: RPI4QOS_VOIP_MACS [none-learn-ips-6+4]" msg
+	fi
+
+
+
+	if [ ! -z "$RPI4QOS_VOIP_IPS_4" ]; then
+        echL "${sLBL}mac: RPI4QOS_VOIP_IPS_4 $RPI4_QOS_VOIP_IPS_4 [learn-ips-6+4]" msg; #sleep 2
+		for cIP4 in $RPI4QOS_VOIP_IPS_4; do
+			echL "ipsetadd ipset add ${sLBL}4 $cIP4"; #sleep 1
+			ipset add ${sLBL}4 $cIP4
+		done
+    else
+        [ -n "$DEBUG" ] && echL "RPI4QOS_VOIP_IPS_4:${RPI4QOS_VOIP_IPS_4:-none}"
+	fi
+
+
+
+	if [ ! -z "$RPI4_QOS_VOIP_IPS_6" ]; then
+        echL "${sLBL}mac: RPI4_QOS_VOIP_IPS_6 $RPI4_QOS_VOIP_IPS_6 [learn-ips-6+4]" msg; #sleep 2
+		for cIP6 in $RPI4QOS_VOIP_IPS_6; do
+			echL "ipsetadd ipset add ${sLBL}6 $cIP6"; #sleep 1
+			ipset add ${sLBL}6 $cIP6
+		done
+    else
+        [ -n "$DEBUG" ] && echL "RPI4_QOS_VOIP_IPS_6:${RPI4_QOS_VOIP_IPS_6:-none}"
+	fi
+
+
+	if [ ! -z "$RPI4_QOS_VOIP_LEARNCONNECTIONS" ]; then
+
+        if ! ipset -n list | grep -q "^${sLBL}traf"; then
+		    echL "Creating-ipsets: ${sLBL}traf" msg
+	        ipset create ${sLBL}traf list:set 2>/dev/null
+        fi
+        if ! ipset -n list | grep -q "^${sLBL}4traf"; then
+		    echL "Creating-ipsets: ${sLBL}4traf" msg
+	        ipset create ${sLBL}4traf hash:ip,port family inet 2>/dev/null
+	        ipset add ${sLBL}traf ${sLBL}4traf 2>/dev/null
+        fi
+        if ! ipset -n list | grep -q "^${sLBL}6traf"; then
+		    echL "Creating-ipsets: ${sLBL}6traf" msg
+	        ipset create ${sLBL}6traf hash:ip,port family inet6 2>/dev/null
+	        ipset add ${sLBL}traf ${sLBL}6traf 2>/dev/null
+        fi
+
+	    #@thesetwocanuse->consolestraf!~?
+	    #-A FORWARD -m set --match-set consoles4 dst -j SET --add-set consoles4traf src,src --exist
+	    #@@@CHANGETHESE... NEW ! 10.2.3.x
+
+    	iptables -D FORWARD -m set --match-set ${sLBL}4 dst -j SET --add-set ${sLBL}4traf src,src --exist 2>/dev/null
+    	ip6tables -D FORWARD -m set --match-set ${sLBL}6 dst -j SET --add-set ${sLBL}6traf src,src --exist 2>/dev/null
+
+
+	    iptables -I FORWARD -m set --match-set ${sLBL}4 dst -j SET --add-set ${sLBL}4traf src,src --exist
+	    ip6tables -I FORWARD -m set --match-set ${sLBL}6 dst -j SET --add-set ${sLBL}6traf src,src --exist
+
+
+	    if [ -n "$DEBUG" ]; then
+		    echo "dbgchecknums: iptables-save | grep consoles | grep traf"; iptables-save | grep voipdev | grep traf
+		    echo "dbgchecknums: ip6tables-save | grep consoles | grep traf"; ip6tables-save | grep voipdev | grep traf
+		    sleep ${RCSLEEP:-0}
+	    fi
+
+
+
+
+	return 0
+
+
+
+	else
+		[ -n "$DEBUG" ] && echL "$FN> populate ${sLBL}*traf DISABLED"; sleep ${RCSLEEP:-0}
+	fi
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 teardown() {
@@ -2137,16 +2350,11 @@ fi
 
 ######### GAMINGPARAMS
 eval `grep '^RPI4QOS_VOIP_MACS=' /root/wrt.ini 2>/dev/null`
-if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then
-    INIMSGvoipON="${INIMSGgameON} RPI4QOS_VOIP_MACS"
+if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then #RPI4QOS_VOIP_MACS="08:00:27:f8:7b:0c"
+    INIMSGvoipON="${INIMSGvoipON} RPI4QOS_VOIP_MACS"
 else
-    INIMSGvoipOFF="${INIMSGgameFF} RPI4QOS_VOIP_MACS"
+    INIMSGvoipOFF="${INIMSGvoipOFF} RPI4QOS_VOIP_MACS"
 fi
-
-
-
-
-
 
 
 
@@ -2159,18 +2367,9 @@ if [ ! -z "$RPI4QOS_GAMING_MACS" ]; then
     #INIMSG="${INIMSG} RPI4QOS_GAMING_MACS"
     INIMSGgameON="${INIMSGgameON} RPI4QOS_GAMING_MACS"
 else
-    INIMSGgameOFF="${INIMSGgameFF} RPI4QOS_GAMING_MACS"
+    INIMSGgameOFF="${INIMSGgameOFF} RPI4QOS_GAMING_MACS"
     #INIMSGoff="${INIMSGoff} RPI4QOS_GAMING_MACS"
 fi
-
-
-
-
-
-
-
-
-
 
 
 eval `grep '^RPI4QOS_GAMING_LEARNCONNECTIONS=' /root/wrt.ini 2>/dev/null`
@@ -2574,6 +2773,14 @@ sLBL="gamingdevice" #sets consoles4+6existorexitCAREFULLITSSTATICINFUNCTIONtmp#?
                                                                                         #?DSCP_PORTs4_TCP_CS0=""
 dynamicipset_setup "flush" #this-if-for-re-runs->possiblyputinteardown-deinit-etc #@@@if? ONLYHANDLING-'GAMING'
 
+
+
+dynamicipset_setup_voip "flush" #local sLBL="voipdevices"
+
+
+
+
+
 #-USECSMOD@ethtool
 
 
@@ -2875,21 +3082,19 @@ IPTBOTH -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp \
 #-m set --match-set Bulk4  dst -j DSCP --set-dscp-class CS1 -m comment --comment "Bulk CS1 ipset" #+src
 #-m set --match-set BE4 dst -j CONNMARK --set-xmark 0x01000000/0x01000000 -m comment --comment "Best Effort CS0 ipset" #+src
 
-
+#############################
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set latsens src -j DSCP \
     --set-dscp-class ${CS_LATSENS:-CS4} -m comment --comment "LATSENS4-SRC-${CS_LATSENS:-CS4}"
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set latsens dst -j DSCP \
     --set-dscp-class ${CS_LATSENS:-CS4} -m comment --comment "LATSENS4-DST-${CS_LATSENS:-CS4}"
-
+###
 $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set latsens6 src -j DSCP \
     --set-dscp-class ${CS_LATSENS:-CS4} -m comment --comment "LATSENS6-SRC-${CS_LATSENS:-CS4}"
 $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set latsens6 dst -j DSCP \
     --set-dscp-class ${CS_LATSENS:-CS4} -m comment --comment "LATSENS6-DST-${CS_LATSENS:-CS4}"
 
 
-
-
-
+##############################
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set streaming dst -j DSCP \
     --set-dscp-class ${CS_STREAMING:-CS3} -m comment --comment "STREAMING4-${CS_STREAMING:-CS3}"
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set streaming src -j DSCP \
@@ -2900,8 +3105,7 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set streaming6 src -j
     --set-dscp-class ${CS_STREAMING:-CS3} -m comment --comment "STREAMING6-DST-${CS_STREAMING:-CS3}"
 
 
-
-
+##############################
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set ${sLBL}4 dst -j DSCP \
     --set-dscp-class ${CS_GAMING:-CS4} -m comment --comment "GAMING4-${CS_GAMING:-CS4}"
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set ${sLBL}4 src -j DSCP \
@@ -2913,7 +3117,7 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set ${sLBL}6 src -j D
 
 
 
-
+#############################
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set \
     --match-set gamecache4 src -j DSCP --set-dscp-class ${CS_GAMING:-CS3} \
     -m comment --comment "GAMECACHE4src-${CS_GAMING:-CS3}"
@@ -2929,7 +3133,7 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set \
 
 
 
-
+#############################
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set cloudflare-v4 src -j DSCP \
     --set-dscp-class $CS_CDN -m comment --comment "CLOUDFL4src-$CS_CDN"
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set cloudflare-v4 dst -j DSCP \
@@ -2941,7 +3145,7 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set cloudflare-v6 dst
 
 
 
-
+############################
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set usrcdn src -j DSCP \
     --set-dscp-class $CS_CDNB -m comment --comment "CDN4srcB-${CS_CDNB}"
 $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set usrcdn dst -j DSCP \
@@ -2958,17 +3162,6 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set usrcdn6 dst -j DS
 
 
 ##################CONTROL+USERFACING-MULTI ### WASHERE HANDLED BY OTHER RULES EXCEPT 143,161,162,514,8080
-
-
-
-
-
-
-
-
-
-
-
 # echL "markbulk@ipsets" msg
 ###dynamic de-prioritisation rules: run connectiongoesabovebulktransferlimit #if storedDSCP=CS0 (Best effort) set=CS1(bulk)
 
@@ -3052,7 +3245,6 @@ $IPTABLES -t mangle -A QOS_MARK_F_${IFACE} -p tcp -d 17.0.0.0/8 -m tcp -m multip
 
 
 
-###############################Zoom - connections go to Zoom with dest ports 8801-8810
 
 
 #Facetime is interesting. Apple say that for firewall purposes only certain ports are used, they don't say if that's source
@@ -3062,31 +3254,21 @@ ipt -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp -m multiport \
     --sports 3478:3497,16384:16387,16393:16402 -m multiport \
     --dports 3478:3497,16384:16387,16393:16402,16609:16618 -m comment \
     --comment "Facetime-${CS_VID:-CS3}" -j DSCP --set-dscp-class ${CS_VID:-CS3}
-
-
 ###############################Zoom - connections go to Zoom with dest ports 8801-8810
 $IPTABLES -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp -m set \
     --match-set Zoom4 dst -m multiport \
     --dports 8801:8810 -j DSCP --set-dscp-class ${CS_VID:-CS3} -m comment --comment "Zoom4-${CS_VID:-CS3}"
-
 $IP6TABLES -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp -m set \
     --match-set Zoom6 dst -m multiport \
     --dports 8801:8810 -j DSCP --set-dscp-class ${CS_VID:-CS3} -m comment --comment "Zoom6-${CS_VID:-CS3}"
 
-
-
-
 ####################################Whatsapp Video
 ipt -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp -m multiport --dports 3478 -m comment \
     --comment "Whatsapp-${CS_VID:-CS3}" -j DSCP --set-dscp-class ${CS_VID:-CS3}
-
-
-
 #####################Irc
 ipt -t mangle -A QOS_MARK_F_${IFACE} -p tcp -m tcp -m multiport --dports 6697 -m comment --comment "IRC CS0 BE" -j CONNMARK --set-xmark 0x01000000/0x01000000
 ####################Wireguard
 ipt -t mangle -A QOS_MARK_F_${IFACE} -p udp -m udp -m multiport --sports 51820 -m comment --comment "WG CS0 BE" -j CONNMARK --set-xmark 0x01000000/0x01000000
-
 
 
 
@@ -3125,32 +3307,87 @@ $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -p udp -m multiport \
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ######################################## HACKYVOIP-TMPFIX
-#RPI4QOS_VOIP_MACS="08:00:27:f8:7b:0c"
 CS_VOIP="EF" #CS_VOIP="${CS_LATSENS:-CS6}"
 if [ ! -z "$RPI4QOS_VOIP_MACS" ]; then
+    
+    dynamicipset_setup_voip
 
-    for p in $RPI4QOS_VOIP_MACS ; do
+   
+##############################
+$IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set voipdevices4 dst -j DSCP \
+    --set-dscp-class ${CS_VOIP:-EF} -m comment --comment "VOIP4d-${CS_VOIP:-EF}"
+$IPTABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set voipdevices4 src -j DSCP \
+    --set-dscp-class ${CS_VOIP:-EF} -m comment --comment "VOIP4s-${CS_VOIP:-EF}"
+$IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set voipdevices6 dst -j DSCP \
+    --set-dscp-class ${CS_VOIP:-EF} -m comment --comment "VOIP6d-${CS_VOIP:-EF}"
+$IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} -m set --match-set voipdevices6 src -j DSCP \
+    --set-dscp-class ${CS_VOIP:-EF} -m comment --comment "VOIP6s-${CS_VOIP:-EF}"
+
+
+
+    #>>>PREROUTING||func
+    #ipt4dscp -p tcp -m set --match-set "voipdevices4" src -j DSCP --set-dscp-class $CS_VOIP
+    #ipt4dscp -p tcp -m set --match-set "voipdevices4" dst -j DSCP --set-dscp-class $CS_VOIP
+    #ipt4dscp -p udp -m set --match-set "voipdevices4" src -j DSCP --set-dscp-class $CS_VOIP
+    #ipt4dscp -p udp -m set --match-set "voipdevices4" dst -j DSCP --set-dscp-class $CS_VOIP
         
-        echL "voip-mac-tmp-workaround: $p $CS_VOIP"    
+    #ipt6dscp -p tcp -m set --match-set "voipdevices6" src -j DSCP --set-dscp-class $CS_VOIP
+    #ipt6dscp -p tcp -m set --match-set "voipdevices6" dst -j DSCP --set-dscp-class $CS_VOIP
+    #ipt6dscp -p udp -m set --match-set "voipdevices6" src -j DSCP --set-dscp-class $CS_VOIP
+    #ipt6dscp -p udp -m set --match-set "voipdevices6" dst -j DSCP --set-dscp-class $CS_VOIP
 
-        $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} \
-            -m mac --mac-source ${p} \
-            -j DSCP --set-dscp-class ${CS_VOIP} \
-            -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
 
-        $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} \
-            -m mac --mac-source ${p} \
-            -j DSCP --set-dscp-class ${CS_VOIP} \
-            -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
 
-    done
+
+    #for p in $RPI4QOS_VOIP_MACS ; do
+    #    echL "voip-mac-tmp-workaround: $p $CS_VOIP"    
+    #    $IPTABLES -t mangle -I QOS_MARK_F_${IFACE} \
+    #        -m mac --mac-source ${p} \
+    #        -j DSCP --set-dscp-class ${CS_VOIP} \
+    #        -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
+    #    $IP6TABLES -t mangle -I QOS_MARK_F_${IFACE} \
+    #        -m mac --mac-source ${p} \
+    #        -j DSCP --set-dscp-class ${CS_VOIP} \
+    #        -m comment --comment "VOIPMAC-$p-${CS_VOIP}"
+    #done
+
+
 
 fi
 
 
-#ip6tables -t mangle -D PREROUTING -m conntrack --ctstate NEW \
-#                    -m mac --mac-source ${cMAC} -j SET --add-set ${sLBL} src --exist 2>/dev/null
+
+
+
+
+#[18765.721401] x_tables: ip_tables: mac match: used from hooks POSTROUTING, but only valid from PREROUTING/INPUT/FORWARD
+#[18765.736300] x_tables: ip6_tables: mac match: used from hooks POSTROUTING, but only valid from PREROUTING/INPUT/FORWARD
+
+
+
+
+
+
+
 
 
 
@@ -3638,5 +3875,6 @@ sqm_prepare_script() {
 
 
 
+#RPI4QOS_VOIP_MACS="08:00:27:f8:7b:0c"
 
 
